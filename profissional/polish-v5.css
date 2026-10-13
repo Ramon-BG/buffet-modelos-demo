@@ -6,3 +6,4 @@ h1 em,h2 em{font-style:normal;font-weight:500}.brand{font-weight:600!important;l
 @media(max-width:760px){.hero h1,.economica .hero h1,.basica .hero h1,.intermediaria .hero h1,.profissional .hero h1{font-size:38px;line-height:1.14}.flavor-tabs{display:grid;grid-template-columns:repeat(4,1fr);overflow:visible}.flavor-tabs button{font-size:13px;padding:15px 4px;white-space:normal}.flavor-content h3{font-size:29px}.service-carousel-controls{padding-top:14px}.service-carousel-position{font-size:12px}.service-carousel-arrows button{width:46px;height:46px;min-width:46px}.carousel-hint{display:block;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.service-carousel-arrows button{transition:none}.service-carousel-arrows button:active{transform:none}}
 @media(max-width:760px){.floating-wa.carousel-active{display:none!important}}
+@media(min-width:761px){.header nav{gap:28px!important;align-items:center}.header-inner{gap:24px}}
