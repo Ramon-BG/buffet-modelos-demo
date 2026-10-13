@@ -53,6 +53,7 @@
 .profissional .faq summary{padding-block:24px}
 .profissional .gallery-item:focus-visible,.profissional button:focus-visible,.profissional a:focus-visible{outline:3px solid #9a5036;outline-offset:4px}
 @media(hover:hover){
+ .profissional .flavor-tabs button:hover{background:#edf0e8;color:#244b42}
  .profissional .planner-choice:hover>span{border-color:#8fa394;background:#f9fbf4;transform:translateX(3px)}
  .profissional .planner-choice>span{transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
  .profissional .gallery-item:hover img{transform:scale(1.045)!important;filter:brightness(.97)!important}

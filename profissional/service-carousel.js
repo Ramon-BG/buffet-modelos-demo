@@ -6,6 +6,24 @@
   const position = document.querySelector('#service-position');
   const originalSelect = selectFlavor;
   let direction = 1;
+  const hoverPointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+  let hoverTimer;
+  function cancelHover() { clearTimeout(hoverTimer); }
+  flavorButtons.forEach(button => {
+    button.addEventListener('pointerenter', event => {
+      cancelHover();
+      if (event.pointerType !== 'mouse' || !hoverPointer.matches || button.dataset.flavor === selectedFlavor) return;
+      hoverTimer = setTimeout(() => {
+        if (!hoverPointer.matches) return;
+        const current = flavorButtons.findIndex(item => item.dataset.flavor === selectedFlavor);
+        direction = flavorButtons.indexOf(button) > current ? 1 : -1;
+        // Usa o mesmo caminho do clique para sincronizar foto, detalhes e preferências.
+        button.click();
+      }, 180);
+    });
+    ['pointerleave', 'pointerdown', 'keydown', 'click'].forEach(type => button.addEventListener(type, cancelHover));
+  });
+  hoverPointer.addEventListener('change', cancelHover);
   function updatePosition() {
     const index = flavorButtons.findIndex(button => button.dataset.flavor === selectedFlavor);
     position.textContent = `${String(index + 1).padStart(2, '0')} / ${String(flavorButtons.length).padStart(2, '0')} · ${flavors[selectedFlavor].service}`;
@@ -21,6 +39,7 @@
     }
   };
   function move(offset) {
+    cancelHover();
     const current = flavorButtons.findIndex(button => button.dataset.flavor === selectedFlavor);
     direction = offset;
     flavorButtons[(current + offset + flavorButtons.length) % flavorButtons.length].click();
