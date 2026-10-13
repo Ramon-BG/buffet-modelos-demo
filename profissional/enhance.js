@@ -5,7 +5,7 @@ if('IntersectionObserver' in window && !reducedMotion){
   document.querySelectorAll('.section,.hosting,.occasion-bar').forEach(el=>{el.classList.add('reveal');revealObserver.observe(el);});
 }
 const sectionLinks=[...document.querySelectorAll('#navegacao a')];
-if('IntersectionObserver' in window){const sectionObserver=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){sectionLinks.forEach(link=>{if(link.hash==='#'+entry.target.id)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});}},{rootMargin:'-20% 0px -50% 0px'});document.querySelectorAll('main section[id]').forEach(el=>sectionObserver.observe(el));}
+if('IntersectionObserver' in window && !document.body.classList.contains('profissional')){const sectionObserver=new IntersectionObserver(entries=>{for(const entry of entries)if(entry.isIntersecting){sectionLinks.forEach(link=>{if(link.hash==='#'+entry.target.id)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');});}},{rootMargin:'-20% 0px -50% 0px'});document.querySelectorAll('main section[id]').forEach(el=>sectionObserver.observe(el));}
 if(!reducedMotion){
   document.querySelector('#flavor-photo')?.addEventListener('load',event=>event.target.animate([{opacity:.45},{opacity:1}],{duration:220}));
   document.querySelectorAll('#form-next,#form-back').forEach(button=>button.addEventListener('click',()=>document.querySelector('.form-stage:not([hidden])')?.animate([{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:200})));

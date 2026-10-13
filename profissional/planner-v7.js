@@ -20,8 +20,8 @@
     flavorButtons.find(button=>button.dataset.flavor===key).click();
     if(!document.querySelector('#save-service').textContent.includes('guardado'))document.querySelector('#save-service').click();
     applyOccasion();
-    document.querySelector('#planner-feedback').textContent=`${flavors[key].service} adicionado às suas escolhas.`;
-    showStep(0);
+    document.querySelector('#planner-feedback').textContent=`Serviço incluído: ${flavors[key].service}.`;
+    showStep(0,false);
   });
   updatePhoto();
   if('IntersectionObserver' in window){
