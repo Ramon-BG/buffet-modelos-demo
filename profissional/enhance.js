@@ -29,10 +29,11 @@ if(document.body.classList.contains('profissional')){
     document.querySelector('#service-detail-link').href=details[selectedFlavor]+'.html';
     const container=document.querySelector('#shortlist-items');container.replaceChildren();
     if(!savedServices.length){const p=document.createElement('p');p.textContent='Explore os serviços e guarde os que quiser levar para a conversa.';container.append(p);}
-    else{const list=document.createElement('ul');savedServices.forEach(key=>{const li=document.createElement('li'),name=document.createElement('span'),remove=document.createElement('button');name.textContent=flavors[key].service;remove.type='button';remove.textContent='Remover';remove.setAttribute('aria-label',`Remover ${flavors[key].service}`);remove.addEventListener('click',()=>{savedServices=savedServices.filter(value=>value!==key);refreshSaved();});li.append(name,remove);list.append(li);});container.append(list);}
+    else{const list=document.createElement('ul');savedServices.forEach(key=>{const li=document.createElement('li'),name=document.createElement('span'),remove=document.createElement('button');name.textContent=flavors[key].service;remove.type='button';remove.textContent='Remover';remove.setAttribute('aria-label',`Remover ${flavors[key].service}`);remove.addEventListener('click',()=>{savedServices=savedServices.filter(value=>value!==key);if(form.querySelector('[name="service"]').value===flavors[key].service)form.querySelector('[name="service"]').value='';refreshSaved();});li.append(name,remove);list.append(li);});container.append(list);}
     document.querySelector('#shortlist-download').disabled=!savedServices.length;
     const text='Olá! Gostaria de conversar sobre estes serviços: '+savedServices.map(key=>flavors[key].service).join(', ')+'.';
-    document.querySelector('#shortlist-whatsapp').href='https://wa.me/0000000000?text='+encodeURIComponent(text);
+    document.querySelector('#shortlist-whatsapp').href='#orcamento';
+    const chosen=document.querySelector('#chosen-services'),chosenList=document.querySelector('#chosen-list');chosen.hidden=!savedServices.length;chosenList.replaceChildren();savedServices.forEach(key=>{const li=document.createElement('li'),span=document.createElement('span'),button=document.createElement('button');span.textContent=flavors[key].service;button.type='button';button.textContent='Remover';button.setAttribute('aria-label','Remover '+flavors[key].service+' do pedido');button.addEventListener('click',()=>{savedServices=savedServices.filter(value=>value!==key);if(form.querySelector('[name="service"]').value===flavors[key].service)form.querySelector('[name="service"]').value='';refreshSaved();});li.append(span,button);chosenList.append(li);});refreshMessage();
     try{sessionStorage.setItem('buffet-demo-services',JSON.stringify(savedServices));}catch{}
   }
   document.querySelector('#save-service').addEventListener('click',()=>{if(savedServices.includes(selectedFlavor))savedServices=savedServices.filter(key=>key!==selectedFlavor);else savedServices.push(selectedFlavor);refreshSaved();});
@@ -40,12 +41,16 @@ if(document.body.classList.contains('profissional')){
   document.querySelector('#finder-cta').addEventListener('click',refreshSaved);
   document.querySelector('#open-shortlist').addEventListener('click',()=>{refreshSaved();savedDialog.showModal();});
   document.querySelector('#close-shortlist').addEventListener('click',()=>savedDialog.close());
-  document.querySelector('#shortlist-clear').addEventListener('click',()=>{savedServices=[];refreshSaved();});
+  document.querySelector('.service-tools').append(document.querySelector('#open-shortlist'));
+  document.querySelector('#shortlist-whatsapp').removeAttribute('target');
+  document.querySelector('#shortlist-whatsapp').addEventListener('click',event=>{event.preventDefault();savedDialog.close();showStep(0);});
+  document.querySelector('#shortlist-clear').addEventListener('click',()=>{savedServices=[];form.querySelector('[name="service"]').value='';refreshSaved();});
   document.querySelector('#shortlist-download').addEventListener('click',()=>{const text='MINHA SELEÇÃO — DEMONSTRAÇÃO\n\n'+savedServices.map(key=>'- '+flavors[key].service).join('\n')+'\n\nPreferências para conversar. Não é reserva nem contratação.';const url=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'})),link=document.createElement('a');link.href=url;link.download='minha-selecao-demo.txt';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
   refreshSaved();
   const initialKey=new URLSearchParams(location.search).get('servico');const key=initialKey==='crepes'?'crepe':initialKey;if(Object.hasOwn(flavors,key)){selectFlavor(flavorButtons.find(button=>button.dataset.flavor===key));refreshMessage();refreshSaved();}
   const originalMessage=message;
-  message=function(){const data=new FormData(form);const interests=data.getAll('interest');return originalMessage()+(interests.length?'\nPontos para conversar: '+interests.join(', '):'');};
+  message=function(){const data=new FormData(form);const interests=data.getAll('interest');const selected=[...new Set([...savedServices.map(key=>flavors[key].service),data.get('service')].filter(Boolean))];let lines=originalMessage().split('\n');if(selected.length){lines=lines.filter(line=>!line.startsWith('Serviço: '));lines.splice(1,0,'Serviços de interesse: '+selected.join(', '));lines=lines.map(line=>line==='Gostaria de sugestões de cardápio e informações de disponibilidade.'?'Podem me informar as opções e a disponibilidade?':line);}return lines.join('\n')+(interests.length?'\nPontos para conversar: '+interests.join(', '):'');};
+  refreshSaved();
   form.addEventListener('change',refreshMessage);
   const filters=[...document.querySelectorAll('[data-filter]')];
   filters.forEach(button=>button.addEventListener('click',()=>{filters.forEach(item=>item.setAttribute('aria-pressed',String(item===button)));photos.forEach(photo=>photo.hidden=button.dataset.filter!=='all'&&photo.dataset.category!==button.dataset.filter);document.querySelector('#gallery-count').textContent=`${photos.filter(photo=>!photo.hidden).length} fotografias exibidas.`;}));

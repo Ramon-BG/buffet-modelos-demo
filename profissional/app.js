@@ -68,7 +68,7 @@ function showStep(step,focus=true) {
   document.querySelector('#form-counter').textContent=`ETAPA ${step+1} DE 3`;
   backButton.hidden=step===0;nextButton.hidden=step===2;
   nextButton.firstChild.textContent=step===0?'Próximo: os detalhes ':'Revisar minha mensagem ';
-  refreshMessage();if(focus){stages[step].querySelector('h3').focus({preventScroll:true});form.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});}
+  refreshMessage();if(focus){stages[step].querySelector('h3').focus({preventScroll:true});form.scrollIntoView({behavior:'instant',block:'start'});}
 }
 showStep(0,false);
 nextButton.addEventListener('click',()=> {const fields=[...stages[currentStep].querySelectorAll('input,select,textarea')];const invalid=fields.find(input=>!input.checkValidity());if(invalid){invalid.reportValidity();return;}showStep(Math.min(2,currentStep+1));});
