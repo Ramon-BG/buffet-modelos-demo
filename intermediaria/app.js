@@ -9,10 +9,10 @@ navigation.querySelectorAll('a').forEach(link => link.addEventListener('click',c
 document.addEventListener('keydown', event => { if(event.key === 'Escape' && navigation.classList.contains('open')) {closeMenu();menuButton.focus();} });
 
 const flavors = {
-  crepe:{image:'crepe',alt:'Crepe em uma frigideira — imagem ilustrativa',note:'CREPE FRANCÊS · FOTOGRAFIA DE REFERÊNCIA',kicker:'DA CHAPA PARA A FESTA',title:'Crepes preparados para o seu evento.',description:'Neste cardápio fictício, apresentamos crepe francês. Um sabor para explorar nesta demonstração.',question:'Pergunte sobre recheios e formatos de serviço.',service:'Crepes',cta:'Quero crepes no meu evento'},
-  massas:{image:'massas',alt:'Massas preparadas — fotografia ilustrativa CC0',note:'MASSAS · FOTOGRAFIA CC0',kicker:'MASSAS À MESA',title:'Massas para reunir seus convidados.',description:'Festa de massas e estação de massas são opções ilustrativas deste modelo. Converse com a equipe sobre as opções para o seu evento.',question:'Pergunte quais massas e molhos estão disponíveis.',service:'Massas',cta:'Quero massas no meu evento'},
-  churrasco:{image:'churrasco',alt:'Espetos na churrasqueira — fotografia ilustrativa',note:'CHURRASCO · FOTOGRAFIA DE REFERÊNCIA',kicker:'O ENCONTRO É NA BRASA',title:'Churrasco para sua comemoração.',description:'Churrasco é uma das opções ilustrativas deste modelo. Leve sua ideia de comemoração para uma conversa sobre o cardápio.',question:'Confirme os cortes, acompanhamentos e a estrutura no local.',service:'Churrasco',cta:'Quero churrasco no meu evento'},
-  coquetel:{image:'coquetel',alt:'Mesa de coquetel — fotografia ilustrativa',note:'COQUETEL · FOTOGRAFIA DE REFERÊNCIA',kicker:'ENTRE UMA CONVERSA E OUTRA',title:'Coquetel para receber seus convidados.',description:'Este exemplo apresenta coquetel para celebrações. Conte como será a ocasião para conhecer as opções de serviço.',question:'Pergunte pelas opções de mesa e formato de atendimento.',service:'Coquetel',cta:'Quero coquetel no meu evento'}
+  crepe:{image:'crepe',alt:'Crepe em uma frigideira — imagem ilustrativa',note:'CREPE FRANCÊS · FOTOGRAFIA DE REFERÊNCIA',kicker:'DA CHAPA PARA A FESTA',title:'Crepes preparados para o seu evento.',description:'Neste exemplo, os crepes são preparados no local. Recheios, equipe e tempo de serviço são combinados para cada evento.',question:'Pergunte sobre recheios e formatos de serviço.',service:'Crepes',cta:'Quero crepes no meu evento'},
+  massas:{image:'massas',alt:'Espaguete com molho — fotografia ilustrativa CC0',note:'MASSAS · FOTOGRAFIA CC0',kicker:'MASSAS À MESA',title:'Massas para reunir seus convidados.',description:'Mesa e estação de massas são formatos deste exemplo. Tipos de massa, molhos e acompanhamentos são definidos na proposta.',question:'Pergunte quais massas e molhos estão disponíveis.',service:'Massas',cta:'Quero massas no meu evento'},
+  churrasco:{image:'churrasco',alt:'Espetos na churrasqueira — fotografia ilustrativa',note:'CHURRASCO · FOTOGRAFIA DE REFERÊNCIA',kicker:'O ENCONTRO É NA BRASA',title:'Churrasco para sua comemoração.',description:'Neste exemplo, o churrasco combina preparo e atendimento no evento. Cortes, acompanhamentos e estrutura são confirmados antes da contratação.',question:'Confirme os cortes, acompanhamentos e a estrutura no local.',service:'Churrasco',cta:'Quero churrasco no meu evento'},
+  coquetel:{image:'coquetel',alt:'Miniaturas e aperitivos — fotografia ilustrativa CC0',note:'COQUETEL · FOTOGRAFIA DE REFERÊNCIA',kicker:'ENTRE UMA CONVERSA E OUTRA',title:'Coquetel para receber seus convidados.',description:'Este exemplo apresenta coquetel para celebrações. Conte como será a ocasião para conhecer as opções de serviço.',question:'Pergunte pelas opções de mesa e formato de atendimento.',service:'Coquetel',cta:'Quero coquetel no meu evento'}
 };
 const flavorButtons = [...document.querySelectorAll('.flavor')];
 let selectedFlavor = 'crepe';
@@ -20,11 +20,11 @@ function selectFlavor(button, focus=false) {
   selectedFlavor=button.dataset.flavor;
   flavorButtons.forEach(item => { const active=item===button;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active));item.tabIndex=active?0:-1; });
   const data=flavors[selectedFlavor];
-  const photo=document.querySelector('#flavor-photo');photo.src=`assets/${data.image}-960.webp`;photo.alt=data.alt;
+  const photo=document.querySelector('#flavor-photo');photo.src=`assets/${data.image}-960.webp?v=6`;photo.alt=data.alt;
   document.querySelector('#flavor-panel').setAttribute('aria-labelledby',button.id);
   for(const [id,key] of [['flavor-photo-note','note'],['flavor-kicker','kicker'],['flavor-title','title'],['flavor-description','description'],['flavor-question','question']]) document.getElementById(id).textContent=data[key];
   const cta=document.querySelector('#flavor-cta'); cta.firstChild.textContent=data.cta+' ';
-  document.querySelector('#selection-note').textContent=`${data.service} selecionado para sua conversa.`;
+  document.querySelector('#selection-note').textContent=`Serviço para seu pedido: ${data.service}.`;
   document.querySelector('[name="service"]').value=data.service;
   if(focus) button.focus();
 }
@@ -85,7 +85,7 @@ const photos=[...document.querySelectorAll('.gallery-item')];
 let photoIndex=0;
 function displayPhoto(index) {
   photoIndex=(index+photos.length)%photos.length;const item=photos[photoIndex];
-  const img=document.querySelector('#dialog-photo');img.src=`assets/${item.dataset.image}-960.webp`;img.alt=item.dataset.caption;
+  const img=document.querySelector('#dialog-photo');img.src=`assets/${item.dataset.image}-960.webp?v=6`;img.alt=item.dataset.caption;
   document.querySelector('#dialog-caption').textContent=item.dataset.caption;
   document.querySelector('#photo-counter').textContent=`${photoIndex+1} de ${photos.length}`;
 }
