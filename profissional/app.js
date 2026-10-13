@@ -20,13 +20,9 @@ function selectFlavor(button, focus=false) {
   selectedFlavor=button.dataset.flavor;
   flavorButtons.forEach(item => { const active=item===button;item.classList.toggle('active',active);item.setAttribute('aria-selected',String(active));item.tabIndex=active?0:-1; });
   const data=flavors[selectedFlavor];
-  const photo=document.querySelector('#flavor-photo');photo.src=`assets/${data.image}-960.webp?v=6`;photo.alt=data.alt;
+  const photo=document.querySelector('#flavor-photo');photo.src=`assets/${data.image}-960.webp?v=10`;photo.alt=data.alt;
   document.querySelector('#flavor-panel').setAttribute('aria-labelledby',button.id);
   for(const [id,key] of [['flavor-photo-note','note'],['flavor-kicker','kicker'],['flavor-title','title'],['flavor-description','description'],['flavor-question','question']]) document.getElementById(id).textContent=data[key];
-  const cta=document.querySelector('#flavor-cta'); cta.firstChild.textContent=data.cta+' ';
-  document.querySelector('#selection-note').textContent=`Explore ${data.service.toLowerCase()} ou guarde este serviço.`;
-  // Explorar o carrossel não acrescenta serviços ao pedido profissional.
-  if(!document.body.classList.contains('profissional'))document.querySelector('[name="service"]').value=data.service;
   if(focus) button.focus();
 }
 flavorButtons.forEach((button,index) => {
@@ -41,57 +37,17 @@ flavorButtons.forEach((button,index) => {
   });
 });
 
-const form=document.querySelector('#quote-form');
-const stages=[...form.querySelectorAll('.form-stage')];
-const progress=[...form.querySelectorAll('.form-progress li')];
-const nextButton=document.querySelector('#form-next');
-const backButton=document.querySelector('#form-back');
-let currentStep=0;
-function message() {
-  const data=new FormData(form);
-  const lines=['Olá, Mesa Viva! Gostaria de conversar sobre um evento.'];
-  if(data.get('occasion'))lines.push(`Ocasião: ${data.get('occasion')}`);
-  if(data.get('service'))lines.push(`Serviço: ${data.get('service')}`);
-  if(data.get('date'))lines.push(`Data: ${data.get('date').split('-').reverse().join('/')}`);
-  if(data.get('guests'))lines.push(`Convidados: aproximadamente ${data.get('guests')}`);
-  if(data.get('place')?.trim())lines.push(`Local: ${data.get('place').trim()}`);
-  if(data.get('note')?.trim())lines.push(`Observação: ${data.get('note').trim()}`);
-  lines.push(data.get('service')?'Podem me informar as opções e a disponibilidade?':'Gostaria de sugestões de cardápio e informações de disponibilidade.');
-  return lines.join('\n');
-}
-function refreshMessage() {
-  const text=message();document.querySelector('#message-preview').value=text;
-  document.querySelector('#whatsapp-send').href=`https://wa.me/0000000000?text=${encodeURIComponent(text)}`;
-}
-function showStep(step,focus=true) {
-  currentStep=step;stages.forEach((stage,index)=>stage.hidden=index!==step);
-  progress.forEach((item,index)=>{item.classList.toggle('current',index===step);item.classList.toggle('done',index<step);if(index===step)item.setAttribute('aria-current','step');else item.removeAttribute('aria-current');});
-  document.querySelector('#form-counter').textContent=`ETAPA ${step+1} DE 3`;
-  backButton.hidden=step===0;nextButton.hidden=step===2;
-  nextButton.firstChild.textContent=step===0?'Próximo: os detalhes ':'Revisar minha mensagem ';
-  refreshMessage();if(focus){stages[step].querySelector('h3').focus({preventScroll:true});form.scrollIntoView({behavior:'instant',block:'start'});}
-}
-showStep(0,false);
-nextButton.addEventListener('click',()=> {const fields=[...stages[currentStep].querySelectorAll('input,select,textarea')];const invalid=fields.find(input=>!input.checkValidity());if(invalid){invalid.reportValidity();return;}showStep(Math.min(2,currentStep+1));});
-backButton.addEventListener('click',()=>showStep(Math.max(0,currentStep-1)));
-form.addEventListener('input',refreshMessage);
-form.addEventListener('submit',event=>event.preventDefault());
-document.querySelector('#flavor-cta').addEventListener('click',()=>{form.querySelector('[name="service"]').value=flavors[selectedFlavor].service;showStep(0,false);});
-document.querySelectorAll('[data-occasion]').forEach(link=>link.addEventListener('click',()=> {
-  [...form.querySelectorAll('[name="occasion"]')].forEach(input=>input.checked=input.value===link.dataset.occasion);showStep(0,false);
-}));
-
 const dialog=document.querySelector('#photo-dialog');
 const photos=[...document.querySelectorAll('.gallery-item')];
 let photoIndex=0;
 function displayPhoto(index) {
   photoIndex=(index+photos.length)%photos.length;const item=photos[photoIndex];
-  const img=document.querySelector('#dialog-photo');img.src=`assets/${item.dataset.image}-960.webp?v=6`;img.alt=item.dataset.caption;
+  const img=document.querySelector('#dialog-photo');img.src=`assets/${item.dataset.image}-960.webp?v=10`;img.alt=item.dataset.caption;
   document.querySelector('#dialog-caption').textContent=item.dataset.caption;
   document.querySelector('#photo-counter').textContent=`${photoIndex+1} de ${photos.length}`;
 }
 photos.forEach((button,index)=>button.addEventListener('click',()=>{displayPhoto(index);dialog.showModal();}));
-document.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());
+dialog.querySelector('.dialog-close').addEventListener('click',()=>dialog.close());
 document.querySelector('#photo-prev').addEventListener('click',()=>displayPhoto(photoIndex-1));
 document.querySelector('#photo-next').addEventListener('click',()=>displayPhoto(photoIndex+1));
 dialog.addEventListener('keydown',event=>{if(event.key==='ArrowRight'){event.preventDefault();displayPhoto(photoIndex+1);}if(event.key==='ArrowLeft'){event.preventDefault();displayPhoto(photoIndex-1);}});
