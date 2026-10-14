@@ -76,7 +76,41 @@
   document.querySelector('#remove-current').addEventListener('click',()=>{form.querySelector('[name="services"][value="'+selectedFlavor+'"]').checked=false;refresh();document.querySelector('#service-feedback').textContent=flavors[selectedFlavor].service+' removido do pedido.';});
   form.querySelectorAll('[name="request"]').forEach(input=>input.addEventListener('change',refresh));
   const originalSelect=selectFlavor;
-  selectFlavor=function(button,focus=false){originalSelect(button,focus);document.querySelector('#service-feedback').textContent='';renderFacts();refresh();animate(document.querySelector('#flavor-panel'));};
+  const carouselPhoto=document.querySelector('#flavor-photo');
+  const carouselVisual=carouselPhoto.parentElement;
+  let slideRevision=0,slideAnimations=[],outgoingPhoto=null;
+  function clearSlide(){
+    slideAnimations.forEach(animation=>animation.cancel());slideAnimations=[];
+    outgoingPhoto?.remove();outgoingPhoto=null;
+  }
+  selectFlavor=function(button,focus=false){
+    const before=selectedFlavor,nextKey=button.dataset.flavor;
+    if(before===nextKey){if(focus)button.focus();return;}
+    // Mantém a foto anterior visível até a próxima imagem estar pronta.
+    const previousPhoto=(outgoingPhoto&&!carouselPhoto.complete?outgoingPhoto:carouselPhoto).cloneNode();
+    const revision=++slideRevision;
+    clearSlide();
+    originalSelect(button,focus);
+    document.querySelector('#service-feedback').textContent='';renderFacts();refresh();
+    if(reduced.matches)return;
+    previousPhoto.removeAttribute('id');previousPhoto.alt='';previousPhoto.setAttribute('aria-hidden','true');
+    previousPhoto.className='carousel-outgoing';previousPhoto.removeAttribute('loading');
+    outgoingPhoto=previousPhoto;carouselVisual.append(previousPhoto);
+    let delta=flavorButtons.findIndex(b=>b.dataset.flavor===nextKey)-flavorButtons.findIndex(b=>b.dataset.flavor===before);
+    if(Math.abs(delta)>flavorButtons.length/2)delta=-delta;
+    const direction=delta>=0?1:-1;
+    const ready=carouselPhoto.decode?carouselPhoto.decode():Promise.resolve();
+    ready.then(()=>{
+      if(revision!==slideRevision||reduced.matches){if(revision===slideRevision)clearSlide();return;}
+      const options={duration:560,easing:'cubic-bezier(.22,.68,.18,1)',fill:'none'};
+      const incoming=carouselPhoto.animate([{transform:`translateX(${direction*100}%)`},{transform:'translateX(0)'}],options);
+      const outgoing=previousPhoto.animate([{transform:'translateX(0)'},{transform:`translateX(${-direction*100}%)`}],options);
+      slideAnimations=[incoming,outgoing];
+      animate(document.querySelector('.flavor-content'));
+      outgoing.finished.then(()=>{if(revision===slideRevision)clearSlide();}).catch(()=>{});
+    }).catch(()=>{if(revision===slideRevision)clearSlide();});
+  };
+  reduced.addEventListener('change',()=>{if(reduced.matches){slideRevision++;clearSlide();}});
   function renderFacts(){
     const list=document.querySelector('#service-facts');list.replaceChildren();
     facts[selectedFlavor].slice(0,professional?3:2).forEach((value,i)=>{const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=['Formato','Combina com','O que confirmar'][i];dd.textContent=value;row.append(dt,dd);list.append(row);});
