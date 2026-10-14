@@ -102,11 +102,11 @@
     const ready=carouselPhoto.decode?carouselPhoto.decode():Promise.resolve();
     ready.then(()=>{
       if(revision!==slideRevision||reduced.matches){if(revision===slideRevision)clearSlide();return;}
-      const options={duration:560,easing:'cubic-bezier(.22,.68,.18,1)',fill:'none'};
+      const options={duration:680,easing:'cubic-bezier(.33,1,.68,1)',fill:'none'};
       const incoming=carouselPhoto.animate([{transform:`translateX(${direction*100}%)`},{transform:'translateX(0)'}],options);
       const outgoing=previousPhoto.animate([{transform:'translateX(0)'},{transform:`translateX(${-direction*100}%)`}],options);
       slideAnimations=[incoming,outgoing];
-      animate(document.querySelector('.flavor-content'));
+      document.querySelector('.flavor-content').animate([{opacity:.7,transform:'translateY(7px)'},{opacity:1,transform:'translateY(0)'}],{duration:420,easing:'cubic-bezier(.22,1,.36,1)'});
       outgoing.finished.then(()=>{if(revision===slideRevision)clearSlide();}).catch(()=>{});
     }).catch(()=>{if(revision===slideRevision)clearSlide();});
   };
