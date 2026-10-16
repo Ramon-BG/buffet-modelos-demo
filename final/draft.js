@@ -1,4 +1,4 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=1';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=2';
 export const STORAGE_KEY='mesa-viva-final-draft-v1';
 export const emptyDraft=()=>({request:'orientacao',services:[],occasion:'',format:'',date:'',guests:'',place:'',note:'',interests:[]});
 const pick=(value,source,fallback='')=>Object.hasOwn(source,value)?value:fallback;
@@ -37,7 +37,7 @@ export function createStore(storage){
   }
   return {get:()=>state,restored,update,subscribe:listener=>listeners.add(listener),
     refresh(){if(!storage)return;try{const raw=storage.getItem(STORAGE_KEY);state=raw?sanitize(JSON.parse(raw)):emptyDraft();listeners.forEach(fn=>fn(state,'restore'));}catch{}},
-    add(keys){const services=[...new Set([...state.services,...keys])];return update({services,request:state.request==='completo'?'completo':'servicos'});},
+    add(keys,source='action'){const services=[...new Set([...state.services,...keys])];return update({services,request:state.request==='completo'?'completo':'servicos'},source);},
     remove(key){return update({services:state.services.filter(s=>s!==key)});},
     reset(){const old=state;state=emptyDraft();try{storage?.removeItem(STORAGE_KEY);}catch{}listeners.forEach(fn=>fn(state,'reset'));return old;}
   };

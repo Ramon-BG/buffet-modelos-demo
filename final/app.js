@@ -1,13 +1,16 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=1';
-import {createStore,buildMessage,dateLabel} from './draft.js?v=1';
-import {setupCarousel} from './carousel.js?v=1';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=2';
+import {createStore,buildMessage,dateLabel} from './draft.js?v=2';
+import {setupCarousel} from './carousel.js?v=2';
+import {setupCompanion} from './companion.js?v=2';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
 let storage;try{storage=window.sessionStorage;}catch{}
 const store=createStore(storage);
+const companion=setupCompanion();
 let feedbackTimer,undoAction;
-function feedback(message,undo){
+function feedback(message,undo,inReceipt=false){
+  if(inReceipt&&!document.querySelector('dialog[open]')&&companion){companion.notify(message,undo);return;}
   const box=$('#feedback');clearTimeout(feedbackTimer);undoAction=undo;
   const host=$$('dialog[open]').at(-1)||document.body;host.append(box);
   $('span',box).textContent=message;$('[data-undo]',box).hidden=!undo;
@@ -48,9 +51,9 @@ function renderSummaries(state){
   const review=$('#review-details');if(review){review.replaceChildren(row('Pedido',REQUESTS[state.request]),row('Serviços',serviceNames||'A definir com a equipe'),...eventRows(state,true).map(([label,value])=>row(label,value)));}
 }
 document.addEventListener('click',event=>{
-  const add=event.target.closest('[data-add]');if(add){const key=add.dataset.add;if(store.get().services.includes(key)){location.href=document.body.dataset.page==='home'?'#pedido':'index.html#pedido';return;}store.add([key]);feedback(SERVICES[key].name+' adicionado ao seu pedido.');}
-  const remove=event.target.closest('[data-remove]');if(remove){const key=remove.dataset.remove,paper=remove.closest('[data-summary]'),index=$$('[data-remove]',paper).indexOf(remove);store.remove(key);const remaining=$$('[data-remove]',paper),target=remaining[Math.min(index,remaining.length-1)]||$('[data-summary-intent]',paper);if(target.tagName!=='BUTTON')target.tabIndex=-1;target.focus({preventScroll:true});feedback(SERVICES[key].name+' removido.',()=>{const services=[...store.get().services];if(!services.includes(key))services.splice(Math.min(index,services.length),0,key);store.update({services},'restore');});}
-  if(event.target.closest('[data-reset]')){const previous=store.reset();step=0;editing=false;showStep(false);feedback('Pedido recomeçado.',()=>store.update(previous,'restore'));}
+  const add=event.target.closest('[data-add]');if(add){const key=add.dataset.add;if(store.get().services.includes(key)){location.href=document.body.dataset.page==='home'?'#pedido':'index.html#pedido';return;}store.add([key]);}
+  const remove=event.target.closest('[data-remove]');if(remove){const key=remove.dataset.remove,paper=remove.closest('[data-summary]'),index=$$('[data-remove]',paper).indexOf(remove);store.remove(key);const remaining=$$('[data-remove]',paper),target=remaining[Math.min(index,remaining.length-1)]||$('[data-summary-intent]',paper);if(target.tagName!=='BUTTON')target.tabIndex=-1;target.focus({preventScroll:true});feedback(SERVICES[key].name+' removido.',()=>{const services=[...store.get().services];if(!services.includes(key))services.splice(Math.min(index,services.length),0,key);store.update({services},'restore');},true);}
+  if(event.target.closest('[data-reset]')){const previous=store.reset();step=0;editing=false;showStep(false);feedback('Pedido recomeçado.',()=>store.update(previous,'restore'),true);}
 });
 
 // The same draft powers the planner, service pages and request form.
@@ -120,11 +123,11 @@ function renderSuggestion(){
 if(plannerOccasion){
   plannerOccasion.addEventListener('change',()=>store.update({occasion:plannerOccasion.value}));
   $$('input[name=planner-format]').forEach(input=>input.addEventListener('change',()=>store.update({format:input.value})));
-  $('#apply-suggestion').addEventListener('click',()=>{const suggestion=suggestionFor(store.get().occasion,store.get().format);if(!suggestion)return;store.add(suggestion.services);feedback('Sugestão incluída. Suas outras escolhas continuam no pedido.');});
+  $('#apply-suggestion').addEventListener('click',()=>{const suggestion=suggestionFor(store.get().occasion,store.get().format);if(!suggestion)return;store.add(suggestion.services,'suggestion');});
 }
 setupCarousel($('[data-carousel]'),key=>{const button=$('[data-carousel] [data-add]');button.dataset.add=key;renderAddButtons(store.get());});
-store.subscribe((state,source)=>{renderSummaries(state);syncForm(state,source);if(source!=='typing')syncPlanner(state);});
-renderSummaries(store.get());syncForm(store.get());syncPlanner(store.get());showStep(false);
+store.subscribe((state,source)=>{renderSummaries(state);companion?.update(state,source);syncForm(state,source);if(source!=='typing')syncPlanner(state);});
+renderSummaries(store.get());companion?.update(store.get(),'init');syncForm(store.get());syncPlanner(store.get());showStep(false);
 
 const menu=$('.menu-toggle'),navigation=$('#navigation');
 function closeMenu(){navigation.classList.remove('open');menu.setAttribute('aria-expanded','false');}
@@ -140,7 +143,7 @@ $$('dialog').forEach(dialog=>{
   dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();});
   dialog.addEventListener('close',()=>{const box=$('#feedback');if(dialog.contains(box)){document.body.append(box);box.classList.remove('visible');}if(!document.querySelector('dialog[open]'))document.body.classList.remove('dialog-open');});
 });
-$('[data-open-summary]').addEventListener('click',()=>openDialog($('#summary-dialog')));
+$$('[data-open-summary]').forEach(button=>button.addEventListener('click',()=>openDialog($('#summary-dialog'))));
 document.addEventListener('click',event=>{
   if(event.target.closest('[data-social-info]'))openDialog($('#social-dialog'));
   if(event.target.closest('[data-send]')){$('[data-demo-message]').textContent=buildMessage(store.get());openDialog($('#message-dialog'));}
@@ -175,8 +178,4 @@ $$('[data-copy]').forEach(button=>button.addEventListener('click',copyMessage));
 $$('[data-download]').forEach(button=>button.addEventListener('click',()=>{
   const url=URL.createObjectURL(new Blob([buildMessage(store.get())],{type:'text/plain;charset=utf-8'}));const link=element('a');link.href=url;link.download='meu-evento-mesa-viva.txt';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);feedback('Seu pedido foi preparado para baixar.');
 }));
-if('IntersectionObserver'in window){
-  const visible=new Map();const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>visible.set(entry.target,entry.isIntersecting));$('[data-mobile-order]').hidden=[...visible.values()].some(Boolean);},{threshold:0});
-  $$('[data-hero],#pedido').forEach(node=>observer.observe(node));
-}else $('[data-mobile-order]').hidden=false;
 window.addEventListener('pageshow',event=>{if(event.persisted)store.refresh();});
