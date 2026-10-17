@@ -137,11 +137,11 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&navigation.
 document.addEventListener('click',event=>{if(!event.target.closest('.site-header'))closeMenu();});
 
 // Native dialogs provide Escape, focus containment and focus restoration.
-function openDialog(dialog){if(!dialog.open){dialog.showModal();document.body.classList.add('dialog-open');}}
+function openDialog(dialog){if(!dialog.open){dialog.showModal();document.documentElement.classList.add('dialog-open');}}
 $$('dialog').forEach(dialog=>{
   $$('[data-close],[data-close-link]',dialog).forEach(button=>button.addEventListener('click',()=>dialog.close()));
   dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();});
-  dialog.addEventListener('close',()=>{const box=$('#feedback');if(dialog.contains(box)){document.body.append(box);box.classList.remove('visible');}if(!document.querySelector('dialog[open]'))document.body.classList.remove('dialog-open');});
+  dialog.addEventListener('close',()=>{const box=$('#feedback');if(dialog.contains(box)){document.body.append(box);box.classList.remove('visible');}if(!document.querySelector('dialog[open]'))document.documentElement.classList.remove('dialog-open');});
 });
 $$('[data-open-summary]').forEach(button=>button.addEventListener('click',()=>openDialog($('#summary-dialog'))));
 document.addEventListener('click',event=>{

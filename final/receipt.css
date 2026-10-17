@@ -2,6 +2,7 @@
 .order-grid { grid-template-columns:minmax(0,1fr); max-width:840px; }
 .detail-body { display:block; }
 .detail-body>div { max-width:760px; }
+html { scrollbar-gutter:stable; }
 .visit-intro,.visit-main { min-width:0; }
 .receipt-rail { position:sticky; top:var(--header); z-index:9; padding:10px 0; pointer-events:none; }
 .event-receipt { pointer-events:auto; }
