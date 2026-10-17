@@ -1,0 +1,15 @@
+/* Motion follows an action or a section entering view; no perpetual decoration. */
+.button>span[aria-hidden] { display:inline-block; transition:transform .25s cubic-bezier(.22,1,.36,1); }
+@media(hover:hover) and (pointer:fine) {
+  .button:hover>span[aria-hidden] { transform:translateX(4px); }
+  .format-options label,.request-options label,.service-choices label { transition:background .2s,border-color .2s,box-shadow .25s,transform .25s; }
+  .format-options label:hover,.request-options label:hover,.service-choices label:hover { transform:translateY(-2px); box-shadow:0 5px 14px #152d3d0c; }
+  .related-grid a img { transition:transform .65s cubic-bezier(.22,1,.36,1); }
+  .related-grid a:hover img { transform:scale(1.025); }
+  .event-receipt .draft-paper li button:hover { color:#9b351d; }
+}
+.button:active,.compact-continue:active { transform:translateY(1px) scale(.985); }
+.service-tabs button { transition:background-color .25s,color .25s; }
+@media(prefers-reduced-motion:reduce) {
+  .button:hover>span[aria-hidden],.button:active,.compact-continue:active,.format-options label:hover,.request-options label:hover,.service-choices label:hover,.related-grid a:hover img { transform:none; }
+}

@@ -39,7 +39,7 @@ export function setupCompanion(){
     if(!message||document.querySelector('dialog[open]'))return;clearTimeout(noticeTimer);undoAction=action;
     if(status.textContent!==message)status.textContent=message;
     undo.hidden=!action;root.classList.add('has-update');updateLayout();
-    if(!reduced.matches)root.animate([{boxShadow:'0 0 0 3px #214d8355'},{boxShadow:'0 8px 28px #152d3d1c'}],{duration:650,easing:'ease-out'});
+    if(!reduced.matches)status.animate([{opacity:.35,transform:'translateY(-3px)'},{opacity:1,transform:'none'}],{duration:300,easing:'ease-out'});
     noticeTimer=setTimeout(()=>{root.classList.remove('has-update');undo.hidden=true;undoAction=null;},action?12000:6500);
   }
   folds.forEach(button=>button.addEventListener('click',()=>{collapsed=!collapsed;try{sessionStorage.setItem('mesa-viva-receipt-collapsed',String(collapsed));}catch{}updateLayout();}));
@@ -48,13 +48,22 @@ export function setupCompanion(){
   return {
     notify,
     update(state,source='action'){
+      const added=previous&&source!=='init'?state.services.filter(key=>!previous.services.includes(key)):[];
+      const countChanged=previous&&previous.services.length!==state.services.length;
       current=state;const message=describeChange(previous,state,source);previous=state;
       const text=state.services.length+' serviço'+(state.services.length===1?'':'s');
-      count.textContent=state.services.length?text:'Suas escolhas, aqui';compactCount.textContent=state.services.length?text:'Vamos planejar?';
+      count.textContent=text;compactCount.textContent=state.services.length?text:'Vamos planejar?';
       root.querySelector('.receipt-continue').textContent=hasDraft(state)?'Continuar meu pedido →':'Começar meu pedido →';
       root.querySelector('[data-receipt-empty]').hidden=!!state.services.length;
       root.querySelector('[data-receipt-details]').hidden=![state.occasion,state.format,state.date,state.guests,state.place.trim()].some(Boolean);
       updateLayout();clearTimeout(typingTimer);
+      if(!reduced.matches&&!document.querySelector('dialog[open]')){
+        added.forEach(key=>{
+          const line=root.querySelector('[data-remove="'+key+'"]')?.closest('li');
+          if(line?.getClientRects().length)line.animate([{clipPath:'inset(0 0 100% 0)',transform:'translateY(-6px)',backgroundColor:'#1e3a9c1f'},{clipPath:'inset(0)',transform:'none',backgroundColor:'transparent'}],{duration:450,easing:'cubic-bezier(.2,.7,.2,1)'});
+        });
+        if(countChanged)[count,compactCount].filter(node=>node.getClientRects().length).forEach(node=>node.animate([{transform:'scale(1.12)'},{transform:'none'}],{duration:320,easing:'ease-out'}));
+      }
       if(source==='typing')typingTimer=setTimeout(()=>notify(message),500);else notify(message);
     }
   };

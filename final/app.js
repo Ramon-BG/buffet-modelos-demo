@@ -1,13 +1,15 @@
 import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=3';
 import {createStore,buildMessage,dateLabel} from './draft.js?v=3';
 import {setupCarousel} from './carousel.js?v=3';
-import {setupCompanion} from './companion.js?v=3';
+import {setupCompanion} from './companion.js?v=5';
+import {setupMotion} from './motion.js?v=5';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
 let storage;try{storage=window.sessionStorage;}catch{}
 const store=createStore(storage);
 const companion=setupCompanion();
+const motion=setupMotion();
 let feedbackTimer,undoAction;
 function feedback(message,undo,inReceipt=false){
   if(inReceipt&&!document.querySelector('dialog[open]')&&companion){companion.notify(message,undo);return;}
@@ -81,7 +83,7 @@ function showStep(focus=true){
   $('[data-save-edit]',form).hidden=!editing;
   $('.form-navigation',form).hidden=step===2;
   $('#form-error').hidden=true;
-  if(focus){const heading=$('[data-step="'+step+'"] h3',form);heading.focus({preventScroll:true});heading.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
+  if(focus){motion.step($('[data-step="'+step+'"]',form));const heading=$('[data-step="'+step+'"] h3',form);heading.focus({preventScroll:true});heading.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
 }
 function invalid(message,control){const box=$('#form-error');box.textContent=message;box.hidden=false;(control?.closest('.field')||$('#service-choices')).append(box);if(control){control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby','form-error');control.focus();}return false;}
 function validStep(){
@@ -115,10 +117,11 @@ const plannerOccasion=$('#planner-occasion');
 function syncPlanner(state){if(!plannerOccasion)return;plannerOccasion.value=state.occasion;$$('input[name=planner-format]').forEach(input=>input.checked=input.value===state.format);renderSuggestion();}
 function renderSuggestion(){
   if(!plannerOccasion)return;const state=store.get(),suggestion=suggestionFor(state.occasion,state.format),button=$('#apply-suggestion');button.disabled=!suggestion;
-  if(!suggestion){$('#suggestion-title').textContent='Qual é o jeito do seu encontro?';$('#suggestion-text').textContent='Escolha um dos formatos para ver uma ideia. A ocasião pode ficar em aberto.';button.textContent='Escolha um formato acima';return;}
+  if(!suggestion){$('#suggestion-title').textContent='Qual é o jeito do seu encontro?';$('#suggestion-text').textContent='Escolha um dos formatos para ver uma ideia. A ocasião pode ficar em aberto.';button.textContent='Escolha um formato acima';motion.suggestion('empty');return;}
   $('#suggestion-title').textContent=suggestion.services.map(key=>SERVICES[key].name).join(' + ');$('#suggestion-text').textContent=suggestion.text;
   $('#suggestion-photo').src='assets/'+suggestion.image+'-480.webp';$('#suggestion-photo').alt=suggestion.services.map(key=>SERVICES[key].name).join(' e ')+' — fotografia ilustrativa';
   button.textContent=suggestion.services.every(key=>state.services.includes(key))?'Esta ideia já está no pedido ✓':'Levar esta ideia ao meu pedido';
+  motion.suggestion(suggestion.services.join('|')+suggestion.text);
 }
 if(plannerOccasion){
   plannerOccasion.addEventListener('change',()=>store.update({occasion:plannerOccasion.value}));
@@ -137,7 +140,7 @@ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&navigation.
 document.addEventListener('click',event=>{if(!event.target.closest('.site-header'))closeMenu();});
 
 // Native dialogs provide Escape, focus containment and focus restoration.
-function openDialog(dialog){if(!dialog.open){dialog.showModal();document.documentElement.classList.add('dialog-open');}}
+function openDialog(dialog){if(!dialog.open){dialog.showModal();document.documentElement.classList.add('dialog-open');motion.dialog(dialog);}}
 $$('dialog').forEach(dialog=>{
   $$('[data-close],[data-close-link]',dialog).forEach(button=>button.addEventListener('click',()=>dialog.close()));
   dialog.addEventListener('click',event=>{if(event.target!==dialog)return;const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)dialog.close();});
@@ -161,9 +164,9 @@ function showPhoto(index){
 if(gallery){
   $$('[data-zoom]',gallery).forEach(button=>button.addEventListener('click',()=>{activePhotos=visiblePhotos();showPhoto(activePhotos.indexOf(button));openDialog(galleryDialog);}));
   $$('[data-filter]').forEach(button=>button.addEventListener('click',()=>{
-    const filter=button.dataset.filter;$$('[data-filter]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
+    const before=motion.captureGallery(),filter=button.dataset.filter;$$('[data-filter]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));
     $$('[data-category]',gallery).forEach(item=>item.hidden=filter!=='all'&&item.dataset.category!==filter);
-    $('#gallery-status').textContent=visiblePhotos().length+' fotografias disponíveis.';
+    $('#gallery-status').textContent=visiblePhotos().length+' fotografias disponíveis.';motion.gallery(before);
   }));
   $('[data-photo-prev]').addEventListener('click',()=>showPhoto(galleryIndex-1));$('[data-photo-next]').addEventListener('click',()=>showPhoto(galleryIndex+1));
   galleryDialog.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight'].includes(event.key)){event.preventDefault();showPhoto(galleryIndex+(event.key==='ArrowRight'?1:-1));}});

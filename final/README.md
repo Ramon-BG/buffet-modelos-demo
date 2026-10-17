@@ -10,6 +10,8 @@ Uma única notinha acompanha a navegação. Em telas largas, começa ao lado da 
 
 Os arquivos são estáticos e precisam ser servidos por HTTP para os módulos JavaScript funcionarem. Publique o conteúdo desta pasta em um servidor de arquivos estáticos, como o GitHub Pages. Abrir index.html diretamente pelo explorador de arquivos não executa o fluxo completo.
 
-Arquivos principais: index.html, site.css, receipt.css, app.js, companion.js, data.js, draft.js e carousel.js. O conteúdo dos serviços e das sugestões está em data.js; os textos estruturais permanecem nas páginas HTML. Sem instalação de pacotes ou ferramentas de compilação.
+O visual da notinha recupera a referência v2: papel amarelo, recorte serrilhado, divisões tracejadas e texto de comanda. Novos itens entram com efeito de impressão. A abertura, as seções, as sugestões, os filtros da galeria, as etapas do pedido e as janelas têm transições curtas. O movimento respeita a preferência do dispositivo por animação reduzida; não é necessário para consultar o conteúdo ou concluir o pedido.
+
+Arquivos principais: index.html, site.css, receipt.css, motion.css, app.js, companion.js, motion.js, data.js, draft.js e carousel.js. O conteúdo dos serviços e das sugestões está em data.js; os textos estruturais permanecem nas páginas HTML. Sem instalação de pacotes ou ferramentas de compilação.
 
 Antes da versão real: validar identidade, textos e cardápios com a cliente; inserir contato e links oficiais; substituir as fotos por registros autorizados quando disponíveis; adaptar a ação de contato; conferir privacidade, domínio, metadados e indexação; medir desempenho e testar em aparelhos reais. O rascunho está intencionalmente bloqueado para indexação.
