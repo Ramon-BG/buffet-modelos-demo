@@ -6,7 +6,7 @@ Inicial, quatro páginas de serviços e créditos. A marca, cidade e cardápios 
 
 O pedido funciona em uma única aba, com armazenamento temporário no navegador. Não existe banco de dados, cadastro, agenda, pagamento ou reserva. O botão de WhatsApp abre apenas uma simulação local; nenhum dado é transmitido. Os destaques sociais são selecionados manualmente, sem conexão com uma conta do Instagram.
 
-Uma única notinha acompanha a navegação. Em telas largas, ocupa uma lateral reservada depois da abertura; nas outras telas, aparece como barra compacta. Ela confirma as alterações, permite remover e desfazer, pode ser recolhida e mantém os detalhes do evento fechados até a consulta. Os resumos repetidos foram retirados; a conferência completa permanece na revisão do pedido e no resumo aberto por toque.
+Uma única notinha acompanha a navegação. Em telas largas, começa ao lado da abertura e acompanha a rolagem, presa à lateral quando chega ao topo. Nas outras telas, uma barra compacta entra no fluxo depois da abertura e acompanha junto ao topo. O movimento usa a rolagem natural da página, sem aparição ou mudança de formato ao sair da abertura. Ela confirma as alterações, permite remover e desfazer, pode ser recolhida e mantém os detalhes do evento fechados até a consulta. Os resumos repetidos foram retirados; a conferência completa permanece na revisão do pedido e no resumo aberto por toque.
 
 Os arquivos são estáticos e precisam ser servidos por HTTP para os módulos JavaScript funcionarem. Publique o conteúdo desta pasta em um servidor de arquivos estáticos, como o GitHub Pages. Abrir index.html diretamente pelo explorador de arquivos não executa o fluxo completo.
 

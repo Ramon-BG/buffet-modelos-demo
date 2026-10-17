@@ -1,7 +1,7 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=2';
-import {createStore,buildMessage,dateLabel} from './draft.js?v=2';
-import {setupCarousel} from './carousel.js?v=2';
-import {setupCompanion} from './companion.js?v=2';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=3';
+import {createStore,buildMessage,dateLabel} from './draft.js?v=3';
+import {setupCarousel} from './carousel.js?v=3';
+import {setupCompanion} from './companion.js?v=3';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
