@@ -9,14 +9,16 @@ export const SERVICES = {
     "check": "Recheios doces e salgados, formato e tempo de atendimento.",
     "menu": [
       [
-        "Formas de servir",
-        "Crepe no cone",
-        "Crepe no prato"
+        "Salgados",
+        "Frango com requeijão",
+        "Presunto e queijo",
+        "Queijo, tomate e manjericão"
       ],
       [
-        "Para combinar",
-        "Recheios salgados",
-        "Recheios doces"
+        "Doces",
+        "Chocolate com morango",
+        "Doce de leite",
+        "Banana com canela"
       ]
     ],
     "needs": [
@@ -35,16 +37,15 @@ export const SERVICES = {
     "check": "Seleção de itens, montagem e reposição.",
     "menu": [
       [
-        "Uma ideia de composição",
+        "Na mesa",
         "Queijos e frios",
-        "Pães e acompanhamentos",
-        "Frutas e geleias"
+        "Pães e torradas",
+        "Geleias, patês e frutas"
       ],
       [
         "Pequenas porções",
-        "Batatas e finalizações",
-        "Espetos caprese",
-        "Outras opções a combinar"
+        "Batatas com creme de queijo",
+        "Espetos caprese"
       ]
     ],
     "needs": [
@@ -64,15 +65,15 @@ export const SERVICES = {
     "menu": [
       [
         "Na brasa",
-        "Cortes a combinar",
-        "Espetos",
-        "Opções de legumes"
+        "Carne bovina",
+        "Frango e linguiça",
+        "Legumes grelhados"
       ],
       [
         "Acompanhamentos",
-        "Arroz",
-        "Saladas",
-        "Farofa"
+        "Arroz e farofa",
+        "Vinagrete",
+        "Saladas"
       ]
     ],
     "needs": [
@@ -92,14 +93,14 @@ export const SERVICES = {
     "menu": [
       [
         "Massas",
-        "Opções curtas",
-        "Opções longas"
+        "Penne",
+        "Espaguete"
       ],
       [
-        "Para finalizar",
-        "Molhos a combinar",
-        "Legumes",
-        "Complementos"
+        "Molhos e finalizações",
+        "Tomate e manjericão",
+        "Molho branco",
+        "Pesto, queijo e legumes"
       ]
     ],
     "needs": [
@@ -118,14 +119,16 @@ export const SERVICES = {
     "check": "Variedade, quantidades e forma de servir.",
     "menu": [
       [
-        "Para explorar",
-        "Salgados tradicionais",
+        "Clássicos",
+        "Coxinha",
+        "Bolinho de queijo",
         "Dadinhos de tapioca"
       ],
       [
-        "Outras possibilidades",
-        "Mini sanduíches",
-        "Mini pizzas"
+        "Mini porções",
+        "Mini hambúrguer",
+        "Mini hot dog",
+        "Mini pizza"
       ]
     ],
     "needs": [
@@ -144,15 +147,15 @@ export const SERVICES = {
     "check": "Versão da feijoada, acompanhamentos e serviço.",
     "menu": [
       [
-        "Para combinar",
-        "Composição da feijoada",
-        "Seleção de carnes"
+        "Feijoada",
+        "Versão tradicional",
+        "Composição mais leve, a combinar"
       ],
       [
         "Acompanhamentos",
-        "Arroz e couve",
-        "Farofa e vinagrete",
-        "Laranja e outros complementos"
+        "Arroz, farofa e couve",
+        "Vinagrete e banana",
+        "Laranja"
       ]
     ],
     "needs": [
@@ -171,14 +174,14 @@ export const SERVICES = {
     "check": "Tipos de fondue, acompanhamentos e equipamentos.",
     "menu": [
       [
-        "Possibilidades",
-        "Fondue de queijo",
-        "Opções de carne a combinar"
+        "Para compartilhar",
+        "Queijos com pães e batatas",
+        "Carnes com molhos"
       ],
       [
         "Para finalizar",
-        "Fondue de chocolate",
-        "Frutas e acompanhamentos"
+        "Chocolate com frutas",
+        "Acompanhamentos doces"
       ]
     ],
     "needs": [

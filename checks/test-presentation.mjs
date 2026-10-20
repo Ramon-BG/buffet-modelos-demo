@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SERVICES} from '../final/data.js?v=6';
-import {createStore,sanitize} from '../final/draft.js?v=6';
+import {SERVICES} from '../final/data.js?v=7';
+import {createStore,sanitize} from '../final/draft.js?v=7';
 import {setupHero} from '../final/hero.js';
 import {setupCompanion} from '../final/companion.js';
 
@@ -55,22 +55,26 @@ test('Reduced motion starts the hero stopped and hides automatic rotation',()=>{
 function receipt(saved){
  const memory=new Map(saved===undefined?[]:[['mesa-viva-receipt-collapsed',saved]]);
  globalThis.sessionStorage={getItem:k=>memory.has(k)?memory.get(k):null,setItem:(k,v)=>memory.set(k,v)};
- const root=new Node(),fold=new Node(),body=new Node(),label=new Node();fold.nodes={'[data-fold-label]':label};
+ const root=new Node(),fold=new Node(),body=new Node(),reveal=new Node(),label=new Node();fold.nodes={'[data-fold-label]':label};
  const selectors=['[data-companion-status]','[data-companion-undo]','[data-companion-count]','[data-compact-count]','.receipt-continue','[data-receipt-empty]','[data-receipt-details]'];
- root.nodes=Object.fromEntries(selectors.map(k=>[k,new Node()]));root.nodes['[data-receipt-body]']=body;root.lists={'[data-receipt-fold]':[fold]};
+ root.nodes=Object.fromEntries(selectors.map(k=>[k,new Node()]));root.nodes['[data-receipt-body]']=body;root.nodes['[data-receipt-reveal]']=reveal;root.lists={'[data-receipt-fold]':[fold]};
  document.querySelector=k=>k==='[data-order-companion]'?root:null;
- const api=setupCompanion();api.update(store.get(),'init');return {root,fold,body,label,memory};
+ const api=setupCompanion();api.update(store.get(),'init');return {root,fold,body,reveal,label,memory};
 }
 const mobile=receipt();
-test('Mobile summary starts collapsed and its visible control operates the same body',()=>{
- assert.equal(mobile.body.hidden,true);assert.equal(mobile.label.textContent,'Mostrar resumo');assert.equal(mobile.fold.attrs['aria-expanded'],'false');
- mobile.fold.events.click();assert.equal(mobile.body.hidden,false);assert.equal(mobile.label.textContent,'Ocultar resumo');
- mobile.fold.events.click();assert.equal(mobile.body.hidden,true);assert.equal(JSON.stringify(store.get()),before);
+test('Summary animation keeps closed content inaccessible and the event intact',()=>{
+ assert.equal(mobile.reveal.inert,true);assert.equal(mobile.reveal.attrs['aria-hidden'],'true');assert.equal(mobile.fold.attrs['aria-expanded'],'false');
+ mobile.fold.events.click();assert.equal(mobile.reveal.inert,false);assert.equal(mobile.body.hidden,false);assert.equal(mobile.label.textContent,'Fechar');
+ mobile.fold.events.click();assert.equal(mobile.reveal.inert,true);assert.equal(mobile.reveal.attrs['aria-hidden'],'true');assert.equal(JSON.stringify(store.get()),before);
 });
 const restored=receipt('false');
-test('An explicit expanded preference survives navigation on mobile',()=>assert.equal(restored.body.hidden,false));
+test('An explicit expanded preference survives navigation on mobile',()=>assert.equal(restored.reveal.inert,false));
 width=1440;const desktop=receipt();
-test('Desktop starts with the receipt available beside the opening',()=>assert.equal(desktop.body.hidden,false));
+test('Desktop also starts compact to keep the photographic opening clear',()=>assert.equal(desktop.reveal.inert,true));
+test('Escape closes the summary without discarding the event',()=>{
+ desktop.fold.events.click();desktop.root.events.keydown({key:'Escape',preventDefault(){}});
+ assert.equal(desktop.reveal.inert,true);assert.equal(desktop.memory.get('mesa-viva-receipt-collapsed'),'true');assert.equal(JSON.stringify(store.get()),before);
+});
 
 const html=readFileSync(new URL('../final/index.html',import.meta.url),'utf8');
 test('Home exposes all seven services directly and separates the hero controls',()=>{
@@ -79,5 +83,15 @@ test('Home exposes all seven services directly and separates the hero controls',
  assert.equal((html.match(/data-order-companion/g)||[]).length,1);
  assert.equal((html.match(/<section[^>]+id="planejar"/g)||[]).length,0);
  assert.equal((html.match(/data-service-tab=/g)||[]).length,0);
+});
+test('Inline menus and the separate gallery keep the request flow available',()=>{
+ const gallery=readFileSync(new URL('../final/galeria.html',import.meta.url),'utf8');
+ assert.equal((html.match(/class="menu-preview"/g)||[]).length,7);
+ assert.equal(html.includes('class="gallery-grid"'),false);
+ assert.ok(html.includes('href="galeria.html"'));
+ assert.equal((gallery.match(/data-zoom=/g)||[]).length,7);
+ assert.ok(gallery.includes('data-page="gallery"'));
+ assert.ok(html.includes('id="pedido"')&&html.includes('id="como"')&&html.includes('data-save-edit'));
+ for(const service of Object.values(SERVICES))assert.ok(service.menu.length>=2);
 });
 console.log(passed+' presentation checks passed.');

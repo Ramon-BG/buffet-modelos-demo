@@ -27,11 +27,13 @@ export function setupHero(root){
   }
   buttons.forEach((button,n)=>button.addEventListener('click',()=>select(n)));
   pause.addEventListener('click',()=>{playing=!playing;revision++;schedule();});
-  root.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch'){hovered=true;schedule();}});
-  root.addEventListener('pointerleave',()=>{hovered=false;schedule();});
+  const hoverTarget=root.querySelector('.hero-controls')||root;
+  hoverTarget.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch'){hovered=true;schedule();}});
+  hoverTarget.addEventListener('pointerleave',()=>{hovered=false;schedule();});
   root.addEventListener('focusin',()=>{focused=true;schedule();});
   root.addEventListener('focusout',()=>queueMicrotask(()=>{focused=root.contains(document.activeElement);schedule();}));
   root.addEventListener('keydown',event=>{
+    if(!event.target.closest('.hero-controls'))return;
     if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
     event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?slides.length-1:(index+(event.key==='ArrowRight'?1:slides.length-1))%slides.length;
     select(next).then(()=>buttons[index].focus());
@@ -39,9 +41,9 @@ export function setupHero(root){
   let point;
   const stage=root.querySelector('.hero-stage');
   stage.querySelectorAll('img').forEach(image=>image.draggable=false);
-  stage.addEventListener('pointerdown',event=>{point={x:event.clientX,y:event.clientY};});
-  stage.addEventListener('pointercancel',()=>point=null);
-  stage.addEventListener('pointerup',event=>{if(!point)return;const dx=event.clientX-point.x,dy=event.clientY-point.y;point=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4)select((index+(dx<0?1:slides.length-1))%slides.length);});
+  root.addEventListener('pointerdown',event=>{point=event.target.closest('a,button')?null:{x:event.clientX,y:event.clientY};});
+  root.addEventListener('pointercancel',()=>point=null);
+  root.addEventListener('pointerup',event=>{if(!point)return;const dx=event.clientX-point.x,dy=event.clientY-point.y;point=null;if(Math.abs(dx)>55&&Math.abs(dx)>Math.abs(dy)*1.4)select((index+(dx<0?1:slides.length-1))%slides.length);});
   document.addEventListener('visibilitychange',schedule);
   reduced.addEventListener('change',()=>{if(reduced.matches){playing=false;revision++;}schedule();});
   if('IntersectionObserver'in window)new IntersectionObserver(entries=>{inView=entries[0].isIntersecting;schedule();},{threshold:.2}).observe(root);

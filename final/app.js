@@ -1,8 +1,8 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=6';
-import {createStore,buildMessage,dateLabel} from './draft.js?v=6';
-import {setupCompanion} from './companion.js?v=6';
-import {setupMotion} from './motion.js?v=6';
-import {setupHero} from './hero.js?v=6';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=7';
+import {createStore,buildMessage,dateLabel} from './draft.js?v=7';
+import {setupCompanion} from './companion.js?v=7';
+import {setupMotion} from './motion.js?v=7';
+import {setupHero} from './hero.js?v=7';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
