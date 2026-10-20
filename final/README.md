@@ -30,4 +30,4 @@ data.js contém serviços; hero.js controla apenas as fotos; draft.js mantém es
 
 O teste de apresentação usa DOM mínimo e não substitui navegador real. Não houve validação visual nesta sessão: nenhum navegador de controle estava disponível. Conferência em aparelhos reais e métricas de campo permanecem pendentes.
 
-A atualização do GitHub não foi concluída: a integração recusou escrita (403) e a autenticação do CLI está inválida. O endereço público pode continuar mostrando a revisão anterior.
+A revisão foi publicada no GitHub Pages em 20/10/2026: https://ramon-bg.github.io/buffet-modelos-demo/final/. A publicação foi feita pelo Git local após a integração recusar escrita. A confirmação de entrega dos arquivos públicos fica em outputs/site-final-publicacao.json no projeto de trabalho.
