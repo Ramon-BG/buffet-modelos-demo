@@ -1,4 +1,4 @@
-import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=3';
+import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=6';
 
 const hasDraft=state=>state.services.length||state.request!=='orientacao'||state.occasion||state.format||state.date||state.guests||state.place.trim()||state.note.trim()||state.interests.length;
 export function describeChange(previous,next,source){
@@ -26,14 +26,16 @@ export function setupCompanion(){
   const status=root.querySelector('[data-companion-status]'),undo=root.querySelector('[data-companion-undo]'),body=root.querySelector('[data-receipt-body]');
   const folds=[...root.querySelectorAll('[data-receipt-fold]')],count=root.querySelector('[data-companion-count]'),compactCount=root.querySelector('[data-compact-count]');
   const wide=matchMedia('(min-width:1360px)'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
-  let collapsed=false;try{collapsed=sessionStorage.getItem('mesa-viva-receipt-collapsed')==='true';}catch{}
+  let preference=null;try{preference=sessionStorage.getItem('mesa-viva-receipt-collapsed');}catch{}
+  let collapsed=preference===null?!wide.matches:preference==='true';
   let current,previous,noticeTimer,typingTimer,undoAction;
   function updateLayout(){
     root.dataset.layout=wide.matches?'paper':'compact';
     root.classList.toggle('is-collapsed',collapsed);body.hidden=collapsed;
+    document.body.classList.toggle('receipt-collapsed',collapsed);
     root.classList.toggle('is-empty',!current||!hasDraft(current));
     document.body.classList.add('companion-visible');
-    folds.forEach(button=>{button.setAttribute('aria-expanded',String(!collapsed));button.setAttribute('aria-label',collapsed?'Expandir notinha do evento':'Recolher notinha do evento');});
+    folds.forEach(button=>{button.setAttribute('aria-expanded',String(!collapsed));button.setAttribute('aria-label',collapsed?'Mostrar resumo do evento':'Ocultar resumo do evento');const label=button.querySelector('[data-fold-label]');if(label)label.textContent=collapsed?'Mostrar resumo':'Ocultar resumo';});
   }
   function notify(message,action){
     if(!message||document.querySelector('dialog[open]'))return;clearTimeout(noticeTimer);undoAction=action;
@@ -42,9 +44,9 @@ export function setupCompanion(){
     if(!reduced.matches)status.animate([{opacity:.35,transform:'translateY(-3px)'},{opacity:1,transform:'none'}],{duration:300,easing:'ease-out'});
     noticeTimer=setTimeout(()=>{root.classList.remove('has-update');undo.hidden=true;undoAction=null;},action?12000:6500);
   }
-  folds.forEach(button=>button.addEventListener('click',()=>{collapsed=!collapsed;try{sessionStorage.setItem('mesa-viva-receipt-collapsed',String(collapsed));}catch{}updateLayout();}));
+  folds.forEach(button=>button.addEventListener('click',()=>{collapsed=!collapsed;preference=String(collapsed);try{sessionStorage.setItem('mesa-viva-receipt-collapsed',String(collapsed));}catch{}updateLayout();}));
   undo.addEventListener('click',()=>{const action=undoAction;undoAction=null;action?.();notify('Alteração desfeita.');const visibleFold=folds.find(button=>button.getClientRects().length);visibleFold?.focus({preventScroll:true});});
-  wide.addEventListener('change',updateLayout);
+  wide.addEventListener('change',()=>{if(preference===null)collapsed=!wide.matches;updateLayout();});
   return {
     notify,
     update(state,source='action'){

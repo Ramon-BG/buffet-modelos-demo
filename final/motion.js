@@ -22,7 +22,7 @@ export function setupMotion(){
         if(!entry.target.contains(document.activeElement))play(entry.target,rise,{duration:650,delay:Math.min(index,3)*65});
       });
     },{threshold:.12,rootMargin:'0px 0px -24px 0px'});
-    document.querySelectorAll('.visit-main .section-head,.steps>li,.gallery-grid>li,.social-grid>button,.related-grid>a,.menu-columns>div,.confirm-list').forEach(node=>observer.observe(node));
+    document.querySelectorAll('.visit-main .section-head,.catalog-card,.steps>li,.gallery-grid>li,.social-grid>button,.related-grid>a,.menu-columns>div,.confirm-list').forEach(node=>observer.observe(node));
   }
   let suggestionKey;
   document.querySelectorAll('#duvidas details').forEach(details=>details.addEventListener('toggle',()=>{

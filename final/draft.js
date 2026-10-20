@@ -1,4 +1,4 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=3';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=6';
 export const STORAGE_KEY='mesa-viva-final-draft-v1';
 export const emptyDraft=()=>({request:'orientacao',services:[],occasion:'',format:'',date:'',guests:'',place:'',note:'',interests:[]});
 const pick=(value,source,fallback='')=>Object.hasOwn(source,value)?value:fallback;
