@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SERVICES} from '../final/data.js?v=7';
-import {createStore,sanitize} from '../final/draft.js?v=7';
+import {SERVICES} from '../final/data.js?v=10';
+import {createStore,sanitize} from '../final/draft.js?v=10';
 import {setupHero} from '../final/hero.js';
 import {setupCompanion} from '../final/companion.js';
 
@@ -77,21 +77,26 @@ test('Escape closes the summary without discarding the event',()=>{
 });
 
 const html=readFileSync(new URL('../final/index.html',import.meta.url),'utf8');
-test('Home exposes all seven services directly and separates the hero controls',()=>{
- assert.equal((html.match(/class="catalog-card"/g)||[]).length,7);
+test('Home exposes seven compact menu shortcuts and separate hero controls',()=>{
+ assert.equal((html.match(/href="cardapios.html#servico-/g)||[]).length,7);
+ assert.equal((html.match(/class="catalog-card"/g)||[]).length,0);
  assert.equal((html.match(/data-hero-select=/g)||[]).length,3);
  assert.equal((html.match(/data-order-companion/g)||[]).length,1);
  assert.equal((html.match(/<section[^>]+id="planejar"/g)||[]).length,0);
  assert.equal((html.match(/data-service-tab=/g)||[]).length,0);
 });
-test('Inline menus and the separate gallery keep the request flow available',()=>{
+test('Separate menus and gallery preserve the conversational request flow',()=>{
+ const menus=readFileSync(new URL('../final/cardapios.html',import.meta.url),'utf8');
  const gallery=readFileSync(new URL('../final/galeria.html',import.meta.url),'utf8');
- assert.equal((html.match(/class="menu-preview"/g)||[]).length,7);
+ assert.equal((menus.match(/class="catalog-card"/g)||[]).length,7);
+ assert.equal((menus.match(/class="menu-preview"/g)||[]).length,7);
+ assert.equal((html.match(/class="menu-preview"/g)||[]).length,0);
  assert.equal(html.includes('class="gallery-grid"'),false);
  assert.ok(html.includes('href="galeria.html"'));
  assert.equal((gallery.match(/data-zoom=/g)||[]).length,7);
  assert.ok(gallery.includes('data-page="gallery"'));
- assert.ok(html.includes('id="pedido"')&&html.includes('id="como"')&&html.includes('data-save-edit'));
+ assert.ok(html.includes('href="cardapios.html"'));
+ assert.ok(html.includes('id="pedido"')&&html.includes('id="como"')&&html.includes('data-chat-next')&&html.includes('data-question="review"'));
  for(const service of Object.values(SERVICES))assert.ok(service.menu.length>=2);
 });
 console.log(passed+' presentation checks passed.');

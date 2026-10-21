@@ -1,8 +1,9 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=7';
-import {createStore,buildMessage,dateLabel} from './draft.js?v=7';
-import {setupCompanion} from './companion.js?v=7';
-import {setupMotion} from './motion.js?v=7';
-import {setupHero} from './hero.js?v=7';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=10';
+import {createStore,buildMessage,dateLabel} from './draft.js?v=10';
+import {setupCompanion} from './companion.js?v=10';
+import {setupMotion} from './motion.js?v=10';
+import {setupHero} from './hero.js?v=10';
+import {setupConversation,JOURNEY_KEY} from './conversation.js?v=10';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -21,20 +22,20 @@ function feedback(message,undo,inReceipt=false){
 }
 $('[data-undo]').addEventListener('click',()=>{const action=undoAction;undoAction=null;action?.();const box=$('#feedback');box.classList.remove('visible');box.closest('dialog')?.querySelector('[data-close]')?.focus();});
 function element(tag,text,className){const node=document.createElement(tag);if(text!==undefined)node.textContent=text;if(className)node.className=className;return node;}
-function row(label,value){const node=element('div');node.append(element('dt',label),element('dd',value));return node;}
+function row(label,value,editKey){const node=element('div'),details=element('dd');details.append(element('span',value));if(editKey){const edit=element('button','Editar');edit.type='button';edit.dataset.chatEdit=editKey;edit.setAttribute('aria-label','Editar '+label.toLowerCase());details.append(edit);}node.append(element('dt',label),details);return node;}
 function eventRows(state,complete=false){
   const rows=[];if(state.occasion||complete)rows.push(['Ocasião',OCCASIONS[state.occasion]||'A definir']);
-  if(state.format)rows.push(['Formato',FORMATS[state.format]]);
+  if(state.format||complete)rows.push(['Formato',FORMATS[state.format]||'A definir']);
   if(state.date||complete)rows.push(['Data',dateLabel(state.date)]);
   if(state.guests||complete)rows.push(['Convidados',state.guests?state.guests+' pessoas':'A definir']);
   if(state.place.trim()||complete)rows.push(['Local',state.place.trim()||'A definir']);
-  if(complete&&state.interests.length)rows.push(['A confirmar',state.interests.join(', ')]);
-  if(complete&&state.note.trim())rows.push(['Observações',state.note.trim()]);return rows;
+  if(complete)rows.push(['A confirmar',state.interests.join(', ')||'Nada informado']);
+  if(complete)rows.push(['Observações',state.note.trim()||'Nada informado']);return rows;
 }
 function renderAddButtons(state){$$('[data-add]').forEach(button=>{
  const key=button.dataset.add;if(!SERVICES[key])return;
  const added=state.services.includes(key);button.classList.toggle('is-added',added);
- button.textContent=added?'Selecionado ✓':'Adicionar ao evento +';
+ button.textContent=button.hasAttribute('data-compact-add')?(added?'Incluído ✓':'Adicionar +'):(added?'Selecionado ✓':'Adicionar ao evento +');
  button.setAttribute('aria-pressed',String(added));
  button.setAttribute('aria-label',SERVICES[key].name+(added?': selecionado. Remover do evento.':': adicionar ao evento.'));
 });}
@@ -52,16 +53,16 @@ function renderSummaries(state){
   const line=$('[data-inline-summary]');if(line)line.textContent=serviceNames?(state.request==='completo'?'Buffet completo · preferências: ':'Serviços de interesse: ')+serviceNames:REQUESTS[state.request]+'.';
   $('[data-mobile-summary]').textContent=serviceNames||REQUESTS[state.request];renderAddButtons(state);
   const preview=$('#message-preview');if(preview)preview.value=buildMessage(state);
-  const review=$('#review-details');if(review){review.replaceChildren(row('Pedido',REQUESTS[state.request]),row('Serviços',serviceNames||'A definir com a equipe'),...eventRows(state,true).map(([label,value])=>row(label,value)));}
+  const review=$('#review-details');if(review){review.replaceChildren(row('Pedido',REQUESTS[state.request],'request'),row('Serviços',serviceNames||'A definir com a equipe','services'),...eventRows(state,true).map(([label,value])=>row(label,value,{'Ocasião':'occasion','Formato':'format','Data':'date','Convidados':'guests','Local':'place','A confirmar':'care','Observações':'care'}[label])));}
 }
 document.addEventListener('click',event=>{
   const add=event.target.closest('[data-add]');if(add){const key=add.dataset.add;if(store.get().services.includes(key)){store.remove(key);feedback(SERVICES[key].name+' removido.',()=>store.add([key]),true);}else store.add([key]);}
   const remove=event.target.closest('[data-remove]');if(remove){const key=remove.dataset.remove,paper=remove.closest('[data-summary]'),index=$$('[data-remove]',paper).indexOf(remove);store.remove(key);const remaining=$$('[data-remove]',paper),target=remaining[Math.min(index,remaining.length-1)]||paper.closest('[data-order-companion]')?.querySelector('[data-receipt-fold]')||paper.closest('dialog')?.querySelector('[data-close]')||$('[data-summary-intent]',paper);if(target.tagName!=='BUTTON')target.tabIndex=-1;target.focus({preventScroll:true});feedback(SERVICES[key].name+' removido.',()=>{const services=[...store.get().services];if(!services.includes(key))services.splice(Math.min(index,services.length),0,key);store.update({services},'restore');},true);}
-  if(event.target.closest('[data-reset]')){const previous=store.reset();step=0;editing=false;showStep(false);feedback('Pedido recomeçado.',()=>store.update(previous,'restore'),true);}
+  if(event.target.closest('[data-reset]')){try{storage?.removeItem(JOURNEY_KEY);}catch{}const previous=store.reset();feedback('Pedido recomeçado.',()=>store.update(previous,'restore'),true);}
 });
 
-// The same draft powers the planner, service pages and request form.
-const form=$('#order-form');let step=0,editing=false;
+// One canonical event draft powers both the guided conversation and the receipt.
+const form=$('#order-form');
 function syncForm(state,source){
   if(!form)return;
   if(source!=='typing'){
@@ -71,68 +72,26 @@ function syncForm(state,source){
     $$('input[name=interests]',form).forEach(input=>input.checked=state.interests.includes(input.value));
   }
   const legacy=$('[data-legacy-service]',form);if(legacy)legacy.hidden=!state.services.includes('coquetel');
-  const choices=$('#service-choices');choices.hidden=state.request==='orientacao'&&!state.services.length;
+  const choices=$('#service-choices');choices.hidden=false;
   $('legend',choices).textContent=state.request==='servicos'?'Quais serviços quer conhecer?':'Tem alguma preferência? (opcional)';
   $('#request-hint').textContent=state.request==='completo'?'Buffet completo indica o que você procura. Cardápio, equipe e estrutura serão combinados; não seleciona todos os serviços.':state.request==='orientacao'?'Tudo bem deixar a escolha em aberto. Se já incluiu um serviço, ele segue como preferência para a conversa.':'As opções marcadas fazem parte do mesmo pedido. Você pode escolher mais de uma.';
   if(source==='reset'){$('#draft-restored').hidden=true;}
 }
-function showStep(focus=true){
-  if(!form)return;
-  $$('[data-step]',form).forEach(panel=>panel.hidden=Number(panel.dataset.step)!==step);
-  $$('.stepmarks li',form).forEach((mark,index)=>{if(index===step)mark.setAttribute('aria-current','step');else mark.removeAttribute('aria-current');});
-  $('[data-next]',form).hidden=step===2||editing;
-  $('[data-next]',form).textContent=step===0?'Continuar: meu evento →':'Revisar meu pedido →';
-  $('[data-back]',form).hidden=step===0||editing||step===2;
-  $('[data-save-edit]',form).hidden=!editing;
-  $('.form-navigation',form).hidden=step===2;
-  $('#form-error').hidden=true;
-  if(focus){motion.step($('[data-step="'+step+'"]',form));const heading=$('[data-step="'+step+'"] h3',form);heading.focus({preventScroll:true});heading.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
-}
-function invalid(message,control){const box=$('#form-error');box.textContent=message;box.hidden=false;(control?.closest('.field')||$('#service-choices')).append(box);if(control){control.setAttribute('aria-invalid','true');control.setAttribute('aria-describedby','form-error');control.focus();}return false;}
-function validStep(){
-  $$('[aria-invalid]',form).forEach(control=>{control.removeAttribute('aria-invalid');control.removeAttribute('aria-describedby');});
-  const state=store.get();
-  if(step===0&&state.request==='servicos'&&!state.services.length)return invalid('Escolha pelo menos um serviço ou marque “Preciso de orientação”.',$('input[name=services]',form));
-  if(step===1){
-    const guests=form.elements.namedItem('guests');const date=form.elements.namedItem('date');
-    if(!guests.validity.valid)return invalid('Informe uma quantidade inteira de convidados, maior que zero. Você também pode deixar em branco.',guests);
-    if(!date.validity.valid)return invalid('Confira a data informada ou deixe o campo em branco.',date);
-  }
-  $('#form-error').hidden=true;return true;
-}
+
 if(form){
-  form.addEventListener('submit',event=>event.preventDefault());
-  form.addEventListener('change',event=>{
-    const {name,value}=event.target;
-    if(name==='request')store.update({request:value});
-    if(name==='services')store.update({services:$$('input[name=services]:checked',form).map(input=>input.value)});
-    if(name==='interests')store.update({interests:$$('input[name=interests]:checked',form).map(input=>input.value)});
-    if(['occasion','format'].includes(name))store.update({[name]:value});
-  });
-  form.addEventListener('input',event=>{if(['date','guests','place','note'].includes(event.target.name))store.update({[event.target.name]:event.target.value},'typing');$('#form-error').hidden=true;});
-  $('[data-next]',form).addEventListener('click',()=>{if(validStep()){step++;showStep();}});
-  $('[data-back]',form).addEventListener('click',()=>{step--;showStep();});
-  $$('[data-edit]',form).forEach(button=>button.addEventListener('click',()=>{step=Number(button.dataset.edit);editing=true;showStep();}));
-  $('[data-save-edit]',form).addEventListener('click',()=>{if(validStep()){step=2;editing=false;showStep();}});
-  if(store.restored)$('#draft-restored').hidden=false;
+ form.addEventListener('change',event=>{
+  const {name,value}=event.target;
+  if(name==='request')store.update({request:value});
+  if(name==='services')store.update({services:$$('input[name=services]:checked',form).map(input=>input.value)});
+  if(name==='interests')store.update({interests:$$('input[name=interests]:checked',form).map(input=>input.value)});
+  if(['occasion','format'].includes(name))store.update({[name]:value});
+ });
+ form.addEventListener('input',event=>{if(['date','guests','place','note'].includes(event.target.name))store.update({[event.target.name]:event.target.value},'typing');$('#form-error').hidden=true;});
+ if(store.restored)$('#draft-restored').hidden=false;
 }
-const plannerOccasion=$('#planner-occasion');
-function syncPlanner(state){if(!plannerOccasion)return;plannerOccasion.value=state.occasion;$$('input[name=planner-format]').forEach(input=>input.checked=input.value===state.format);renderSuggestion();}
-function renderSuggestion(){
-  if(!plannerOccasion)return;const state=store.get(),suggestion=suggestionFor(state.occasion,state.format),button=$('#apply-suggestion');button.disabled=!suggestion;
-  if(!suggestion){$('#suggestion-title').textContent='Qual é o jeito do seu encontro?';$('#suggestion-text').textContent='Escolha um dos formatos para ver uma ideia. A ocasião pode ficar em aberto.';button.textContent='Escolha um formato acima';motion.suggestion('empty');return;}
-  $('#suggestion-title').textContent=suggestion.services.map(key=>SERVICES[key].name).join(' + ');$('#suggestion-text').textContent=suggestion.text;
-  $('#suggestion-photo').src='assets/'+suggestion.image+'-480.webp';$('#suggestion-photo').alt=suggestion.services.map(key=>SERVICES[key].name).join(' e ')+' — fotografia ilustrativa';
-  button.textContent=suggestion.services.every(key=>state.services.includes(key))?'Esta ideia já está no pedido ✓':'Levar esta ideia ao meu pedido';
-  motion.suggestion(suggestion.services.join('|')+suggestion.text);
-}
-if(plannerOccasion){
-  plannerOccasion.addEventListener('change',()=>store.update({occasion:plannerOccasion.value}));
-  $$('input[name=planner-format]').forEach(input=>input.addEventListener('change',()=>store.update({format:input.value})));
-  $('#apply-suggestion').addEventListener('click',()=>{const suggestion=suggestionFor(store.get().occasion,store.get().format);if(!suggestion)return;store.add(suggestion.services,'suggestion');});
-}
-store.subscribe((state,source)=>{renderSummaries(state);companion?.update(state,source);syncForm(state,source);if(source!=='typing')syncPlanner(state);});
-renderSummaries(store.get());companion?.update(store.get(),'init');syncForm(store.get());syncPlanner(store.get());showStep(false);
+const conversation=setupConversation(form,{getState:store.get,motion,storage});
+store.subscribe((state,source)=>{renderSummaries(state);companion?.update(state,source);syncForm(state,source);conversation?.sync(state,source);});
+renderSummaries(store.get());companion?.update(store.get(),'init');syncForm(store.get());conversation?.sync(store.get(),'init');
 
 const menu=$('.menu-toggle'),navigation=$('#navigation');
 function closeMenu(){navigation.classList.remove('open');menu.setAttribute('aria-expanded','false');}
@@ -177,10 +136,14 @@ if(gallery){
 async function copyMessage(){
   const message=buildMessage(store.get());
   try{await navigator.clipboard.writeText(message);feedback('Mensagem copiada.');}
-  catch{const field=$('#message-preview');if(field){if(step!==2){step=2;editing=false;showStep(false);}field.closest('details').open=true;field.focus();field.select();}feedback('Selecione a mensagem e copie pelo menu do seu dispositivo.');}
+  catch{const field=$('#message-preview');if(field){conversation?.showReview();field.closest('details').open=true;field.focus();field.select();}feedback('Selecione a mensagem e copie pelo menu do seu dispositivo.');}
 }
 $$('[data-copy]').forEach(button=>button.addEventListener('click',copyMessage));
 $$('[data-download]').forEach(button=>button.addEventListener('click',()=>{
   const url=URL.createObjectURL(new Blob([buildMessage(store.get())],{type:'text/plain;charset=utf-8'}));const link=element('a');link.href=url;link.download='meu-evento-mesa-viva.txt';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);feedback('Seu pedido foi preparado para baixar.');
 }));
-window.addEventListener('pageshow',event=>{if(event.persisted)store.refresh();});
+window.addEventListener('pageshow',event=>{if(event.persisted){store.refresh();conversation?.restoreProgress();}});
+
+// Open the requested menu when arriving from a modality shortcut.
+function revealLinkedMenu(){const id=location.hash.slice(1);if(!id.startsWith('servico-'))return;const card=document.getElementById(id),details=card?.querySelector('details');if(details)details.open=true;}
+revealLinkedMenu();window.addEventListener('hashchange',revealLinkedMenu);

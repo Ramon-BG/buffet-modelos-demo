@@ -1,33 +1,33 @@
-# Mesa Viva — cardápios e apresentação
+# Mesa Viva — cardápios e pedido guiado
 
-Modelo fictício de buffet. Revisão de 20/10/2026, baseada na hierarquia dos modelos simples, no pedido único da versão final e na organização do catálogo enviado.
+Modelo fictício de buffet. Revisão iniciada em 20/10 e concluída em 21/10/2026.
 
 ## Experiência
 
-- Abertura com três fotografias existentes ao fundo de toda a seção, texto e CTA estáveis. Dissolução de 900 ms, intervalo de 7 segundos, seleção direta, pausa, teclado e gesto. Foco, controles sob o ponteiro, aba oculta e saída da área visível pausam a rotação. Movimento reduzido inicia sem troca automática.
-- Sete modalidades: crepe francês, ilha gastronômica, churrasco, massas, salgados, feijoada e fondue. Cada cardápio pode ser expandido na inicial e tem uma página com detalhes. Exemplos de sabores não representam o cardápio contratado.
-- Uma notinha acompanha o mesmo rascunho em todas as páginas. O botão “Meu evento” abre/fecha a lista com transição, sem apagar escolhas. Começa recolhida em todas as telas, salvo preferência da aba. Conteúdo fechado fica fora do teclado e da leitura assistiva; Escape recolhe e devolve o foco ao botão.
-- Seleção e remoção no catálogo, remoção/desfazer no resumo, pedido em três etapas, edição antes da revisão, cópia e download. Buffet completo é intenção, não inclusão automática de todos os serviços.
-- O cabeçalho usa a largura da tela e dá acesso aos cardápios, à galeria e ao pedido. A explicação do processo fica junto do formulário. A galeria tem página própria, filtros, ampliação e navegação por teclado.
+- Abertura fotográfica preservada: três fotos de fundo, texto estável, seleção direta, pausa, teclado e gesto. Movimento reduzido inicia sem troca automática.
+- Inicial curta: visão das sete modalidades, acesso aos cardápios e pedido. Cardápios completos em cardapios.html; galeria em galeria.html. Ambas ligadas no cabeçalho.
+- Sete cardápios em linhas compactas, expansíveis: crepe francês, ilha gastronômica, churrasco, massas, salgados, feijoada e fondue. Mais de uma modalidade pode integrar o mesmo evento.
+- Uma notinha acompanha o mesmo rascunho entre as páginas. Meu evento abre/fecha com transição; começa recolhida salvo preferência da aba. Conteúdo fechado fica fora do teclado e da leitura assistiva; Escape recolhe.
+- Pedido em conversa guiada, uma pergunta por vez. Voltar preserva respostas; perguntas opcionais podem ficar em aberto. Histórico recolhível e revisão permitem editar qualquer resposta. Quem já escolheu cardápios pode usar essas escolhas e seguir.
+- A posição da conversa também é retomada. Recomeçar limpa pedido e progresso, inclusive ao retornar pelo histórico do navegador. Buffet completo indica intenção e não inclui automaticamente todos os serviços.
+- Introdução do pedido e título das dúvidas ficam acima dos respectivos conteúdos, sem colunas concorrentes. Cópia, download e simulação da mensagem continuam disponíveis na revisão.
 
 ## Conteúdo e limites
 
-Mesa Viva, cidade, descrições e composições são exemplos. Não há preços de buffet, depoimentos inventados, disponibilidade confirmada, Instagram conectado ou contato real.
+Mesa Viva, cidade, descrições e sabores são exemplos. Não há preços de buffet, depoimentos inventados, disponibilidade confirmada ou contato real. Não foram buscadas novas fotos. As existentes são ilustrativas e mantêm os créditos; salgados, feijoada e fondue têm espaços editoriais para fotografias futuras.
 
-Não foram buscadas novas fotos. As existentes são ilustrativas e mantêm os créditos. Salgados, feijoada e fondue usam espaços editoriais “Foto a definir”. Lora e Source Sans 3 são locais e têm licenças em assets/. A Lora foi obtida do Google Fonts, com SIL OFL do repositório oficial.
-
-O WhatsApp continua como simulação local; nenhum pedido é transmitido. Não há painel administrativo, banco de dados, agenda ou pagamentos. A chave de armazenamento da aba permanece a mesma; a opção legada coquetel é preservada em pedidos anteriores sem aparecer como oitavo serviço do catálogo.
+Lora e Source Sans 3 são fontes locais com licenças em assets/. WhatsApp é simulação local; nenhum pedido é transmitido. Não há painel administrativo, banco de dados, agenda ou pagamentos. Rascunho e progresso ficam no sessionStorage da mesma aba. A chave do rascunho foi preservada; coquetel permanece compatível com pedidos antigos sem ser oferecido como oitava modalidade.
 
 ## Arquivos e prévia
 
-Sirva esta pasta por HTTP, por exemplo `python -m http.server 8765`. Abrir index.html pelo explorador não executa os módulos JavaScript corretamente.
+Sirva a pasta por HTTP, por exemplo `python -m http.server 8765`. Abrir index.html pelo explorador não executa corretamente os módulos.
 
-data.js contém serviços; hero.js controla apenas as fotos; draft.js mantém estado único; app.js integra os fluxos; companion.js apresenta o resumo. HTMLs contêm o catálogo e os detalhes estáticos. site.css, receipt.css e motion.css organizam apresentação, resumo e movimento.
+data.js contém os serviços; draft.js mantém o estado único; conversation.js controla as perguntas e o progresso; companion.js apresenta a notinha; app.js integra os fluxos; hero.js controla as fotos. Os testes ficam em checks/ no repositório.
 
 ## Verificação
 
-17 testes programáticos passaram, incluindo sete serviços, legado, armazenamento indisponível, seleção aditiva, mensagem, resumo recolhido, preferência restaurada, fechamento por Escape, galeria separada e independência do carrossel. Onze HTMLs passaram na auditoria de links, âncoras, imagens e bloqueio de indexação. JavaScript passou na verificação de sintaxe.
+22 verificações programáticas: sete do rascunho, dez de apresentação e cinco da navegação da conversa. Doze páginas auditadas para links, âncoras, imagens e bloqueio de indexação; JavaScript conferido na sintaxe.
 
-Além dos testes com DOM mínimo, houve conferência no navegador: abertura, expansão dos cardápios, seleção combinada, resumo, remover/desfazer, navegação entre páginas, filtros/ampliação, revisão, edição dos serviços e convidados e simulação da mensagem. Sem rolagem lateral nas larguras solicitadas de 320, 390, 768, 1280 e 1676 pixels. O navegador reserva 15 pixels para a barra; a largura útil foi registrada separadamente. Conferência em aparelhos físicos e métricas de campo permanecem pendentes.
+No navegador: seleção de modalidades, continuidade entre cardápios, galeria e pedido, voltar, pular, validação de convidados, edição na revisão e no histórico, perguntas deixadas em aberto, mensagem simulada e recomeço do pedido entre páginas. Sem rolagem lateral nas larguras solicitadas de 320, 390, 768, 1280 e 1676 pixels. Aparelhos físicos e métricas de campo não foram medidos.
 
-Endereço do modelo: https://ramon-bg.github.io/buffet-modelos-demo/final/. A confirmação da revisão publicada e da entrega dos arquivos públicos fica em outputs/site-final-publicacao.json no projeto de trabalho.
+Endereço do modelo: https://ramon-bg.github.io/buffet-modelos-demo/final/. A confirmação da publicação e os registros detalhados ficam nos relatórios locais outputs/site-final-publicacao.json e outputs/site-final-ui-ux-verificacao.json.
