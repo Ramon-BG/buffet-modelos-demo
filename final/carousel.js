@@ -1,4 +1,4 @@
-import {SERVICES} from './data.js?v=10';
+import {SERVICES} from './data.js?v=11';
 export function setupCarousel(root,onView){
   if(!root)return null;
   const keys=Object.keys(SERVICES),tabs=[...root.querySelectorAll('[role="tab"]')],photo=root.querySelector('[data-service-photo]'),visual=photo.parentElement,content=root.querySelector('[data-service-content]'),toggle=root.querySelector('[data-carousel-toggle]');

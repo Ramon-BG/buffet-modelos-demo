@@ -1,4 +1,5 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=10';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=11';
+import {normalizeGuestCount} from './order-rules.js?v=11';
 export const STORAGE_KEY='mesa-viva-final-draft-v1';
 export const emptyDraft=()=>({request:'orientacao',services:[],occasion:'',format:'',date:'',guests:'',place:'',note:'',interests:[]});
 const pick=(value,source,fallback='')=>Object.hasOwn(source,value)?value:fallback;
@@ -9,7 +10,7 @@ export function sanitize(value){
   let date=text(value.date,10);
   const parsed=new Date(date+'T12:00:00Z');
   if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||Number.isNaN(parsed.getTime())||parsed.toISOString().slice(0,10)!==date)date='';
-  const guests=/^[1-9]\d{0,5}$/.test(String(value.guests||''))&&Number(value.guests)<=100000?String(value.guests):'';
+  const guests=normalizeGuestCount(value.guests)??'';
   return {request:pick(value.request,REQUESTS,'orientacao'),services,occasion:pick(value.occasion,OCCASIONS),format:pick(value.format,FORMATS),date,guests,place:text(value.place,120),note:text(value.note,600),interests:Array.isArray(value.interests)?[...new Set(value.interests.filter(i=>INTERESTS.includes(i)))]:[]};
 }
 export const dateLabel=value=>value?value.split('-').reverse().join('/'):'A definir';
@@ -36,7 +37,12 @@ export function createStore(storage){
     listeners.forEach(listener=>listener(state,source));return state;
   }
   return {get:()=>state,restored,update,subscribe:listener=>listeners.add(listener),
-    refresh(){if(!storage)return;try{const raw=storage.getItem(STORAGE_KEY);state=raw?sanitize(JSON.parse(raw)):emptyDraft();listeners.forEach(fn=>fn(state,'restore'));}catch{}},
+    refresh(){
+      if(storage){
+        try{const raw=storage.getItem(STORAGE_KEY);state=raw?sanitize(JSON.parse(raw)):emptyDraft();}catch{}
+      }
+      listeners.forEach(fn=>fn(state,'restore'));
+    },
     add(keys,source='action'){const services=[...new Set([...state.services,...keys])];return update({services,request:state.request==='completo'?'completo':'servicos'},source);},
     remove(key){return update({services:state.services.filter(s=>s!==key)});},
     reset(){const old=state;state=emptyDraft();try{storage?.removeItem(STORAGE_KEY);}catch{}listeners.forEach(fn=>fn(state,'reset'));return old;}

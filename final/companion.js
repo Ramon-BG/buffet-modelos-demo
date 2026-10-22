@@ -1,4 +1,4 @@
-import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=10';
+import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=11';
 
 const hasDraft=state=>state.services.length||state.request!=='orientacao'||state.occasion||state.format||state.date||state.guests||state.place.trim()||state.note.trim()||state.interests.length;
 export function describeChange(previous,next,source){
@@ -38,7 +38,7 @@ export function setupCompanion(){
     document.body.classList.toggle('receipt-collapsed',collapsed);
     root.classList.toggle('is-empty',!current||!hasDraft(current));
     document.body.classList.add('companion-visible');
-    folds.forEach(button=>{button.setAttribute('aria-expanded',String(!collapsed));button.setAttribute('aria-label',collapsed?'Abrir Meu evento':'Fechar Meu evento');const label=button.querySelector('[data-fold-label]');if(label)label.textContent=collapsed?'Ver resumo':'Fechar';});
+    folds.forEach(button=>{button.setAttribute('aria-expanded',String(!collapsed));button.setAttribute('aria-label','Meu evento · '+compactCount.textContent+' · '+(collapsed?'Ver resumo':'Fechar'));const label=button.querySelector('[data-fold-label]');if(label)label.textContent=collapsed?'Ver resumo':'Fechar';});
   }
   function setCollapsed(value){collapsed=value;preference=String(collapsed);try{sessionStorage.setItem('mesa-viva-receipt-collapsed',preference);}catch{}updateLayout();}
   function notify(message,action){

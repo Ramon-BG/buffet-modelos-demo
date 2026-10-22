@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SERVICES} from '../final/data.js?v=10';
-import {createStore,sanitize} from '../final/draft.js?v=10';
+import {SERVICES} from '../final/data.js?v=11';
+import {createStore,sanitize} from '../final/draft.js?v=11';
 import {setupHero} from '../final/hero.js';
 import {setupCompanion} from '../final/companion.js';
 

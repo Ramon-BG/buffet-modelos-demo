@@ -1,9 +1,10 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS,suggestionFor} from './data.js?v=10';
-import {createStore,buildMessage,dateLabel} from './draft.js?v=10';
-import {setupCompanion} from './companion.js?v=10';
-import {setupMotion} from './motion.js?v=10';
-import {setupHero} from './hero.js?v=10';
-import {setupConversation,JOURNEY_KEY} from './conversation.js?v=10';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS} from './data.js?v=11';
+import {createStore,buildMessage,dateLabel} from './draft.js?v=11';
+import {setupCompanion} from './companion.js?v=11';
+import {setupMotion} from './motion.js?v=11';
+import {setupHero} from './hero.js?v=11';
+import {setupConversation,JOURNEY_KEY,EDIT_KEY} from './conversation.js?v=11';
+import {validateOrder} from './order-rules.js?v=11';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -35,9 +36,11 @@ function eventRows(state,complete=false){
 function renderAddButtons(state){$$('[data-add]').forEach(button=>{
  const key=button.dataset.add;if(!SERVICES[key])return;
  const added=state.services.includes(key);button.classList.toggle('is-added',added);
- button.textContent=button.hasAttribute('data-compact-add')?(added?'Incluído ✓':'Adicionar +'):(added?'Selecionado ✓':'Adicionar ao evento +');
+ const compact=button.hasAttribute('data-compact-add');
+ button.textContent=compact?(added?'Remover':'Selecionar +'):(added?'Remover do evento':'Adicionar ao evento +');
+ button.closest('.catalog-card')?.classList.toggle('is-selected',added);
  button.setAttribute('aria-pressed',String(added));
- button.setAttribute('aria-label',SERVICES[key].name+(added?': selecionado. Remover do evento.':': adicionar ao evento.'));
+ button.setAttribute('aria-label',(compact?(added?'Remover':'Selecionar'):(added?'Remover do evento':'Adicionar ao evento'))+': '+SERVICES[key].name);
 });}
 function renderSummaries(state){
   $$('[data-summary]').forEach(paper=>{
@@ -58,40 +61,27 @@ function renderSummaries(state){
 document.addEventListener('click',event=>{
   const add=event.target.closest('[data-add]');if(add){const key=add.dataset.add;if(store.get().services.includes(key)){store.remove(key);feedback(SERVICES[key].name+' removido.',()=>store.add([key]),true);}else store.add([key]);}
   const remove=event.target.closest('[data-remove]');if(remove){const key=remove.dataset.remove,paper=remove.closest('[data-summary]'),index=$$('[data-remove]',paper).indexOf(remove);store.remove(key);const remaining=$$('[data-remove]',paper),target=remaining[Math.min(index,remaining.length-1)]||paper.closest('[data-order-companion]')?.querySelector('[data-receipt-fold]')||paper.closest('dialog')?.querySelector('[data-close]')||$('[data-summary-intent]',paper);if(target.tagName!=='BUTTON')target.tabIndex=-1;target.focus({preventScroll:true});feedback(SERVICES[key].name+' removido.',()=>{const services=[...store.get().services];if(!services.includes(key))services.splice(Math.min(index,services.length),0,key);store.update({services},'restore');},true);}
-  if(event.target.closest('[data-reset]')){try{storage?.removeItem(JOURNEY_KEY);}catch{}const previous=store.reset();feedback('Pedido recomeçado.',()=>store.update(previous,'restore'),true);}
+  if(event.target.closest('[data-reset]')){try{storage?.removeItem(JOURNEY_KEY);storage?.removeItem(EDIT_KEY);}catch{}const previous=store.reset();feedback('Pedido recomeçado.',()=>store.update(previous,'restore'),true);}
 });
 
-// One canonical event draft powers both the guided conversation and the receipt.
-const form=$('#order-form');
-function syncForm(state,source){
-  if(!form)return;
-  if(source!=='typing'){
-    $$('input[name=request]',form).forEach(input=>input.checked=input.value===state.request);
-    $$('input[name=services]',form).forEach(input=>input.checked=state.services.includes(input.value));
-    for(const key of ['occasion','format','date','guests','place','note'])form.elements.namedItem(key).value=state[key];
-    $$('input[name=interests]',form).forEach(input=>input.checked=state.interests.includes(input.value));
-  }
-  const legacy=$('[data-legacy-service]',form);if(legacy)legacy.hidden=!state.services.includes('coquetel');
-  const choices=$('#service-choices');choices.hidden=false;
-  $('legend',choices).textContent=state.request==='servicos'?'Quais serviços quer conhecer?':'Tem alguma preferência? (opcional)';
-  $('#request-hint').textContent=state.request==='completo'?'Buffet completo indica o que você procura. Cardápio, equipe e estrutura serão combinados; não seleciona todos os serviços.':state.request==='orientacao'?'Tudo bem deixar a escolha em aberto. Se já incluiu um serviço, ele segue como preferência para a conversa.':'As opções marcadas fazem parte do mesmo pedido. Você pode escolher mais de uma.';
-  if(source==='reset'){$('#draft-restored').hidden=true;}
-}
+// The conversation owns form state; summaries render only the confirmed order.
+const form = $('#order-form');
+const conversation = setupConversation(form, {store, motion, storage});
+store.subscribe((state, source) => {
+  renderSummaries(state);
+  companion?.update(state, source);
+  conversation?.sync(state, source);
+});
+renderSummaries(store.get());
+companion?.update(store.get(), 'init');
 
-if(form){
- form.addEventListener('change',event=>{
-  const {name,value}=event.target;
-  if(name==='request')store.update({request:value});
-  if(name==='services')store.update({services:$$('input[name=services]:checked',form).map(input=>input.value)});
-  if(name==='interests')store.update({interests:$$('input[name=interests]:checked',form).map(input=>input.value)});
-  if(['occasion','format'].includes(name))store.update({[name]:value});
- });
- form.addEventListener('input',event=>{if(['date','guests','place','note'].includes(event.target.name))store.update({[event.target.name]:event.target.value},'typing');$('#form-error').hidden=true;});
- if(store.restored)$('#draft-restored').hidden=false;
+function outputIsReady() {
+  if (conversation) return conversation.ensureReady();
+  const issue = validateOrder(store.get());
+  if (!issue) return true;
+  feedback('Revise seu pedido antes de continuar. ' + issue.message);
+  return false;
 }
-const conversation=setupConversation(form,{getState:store.get,motion,storage});
-store.subscribe((state,source)=>{renderSummaries(state);companion?.update(state,source);syncForm(state,source);conversation?.sync(state,source);});
-renderSummaries(store.get());companion?.update(store.get(),'init');syncForm(store.get());conversation?.sync(store.get(),'init');
 
 const menu=$('.menu-toggle'),navigation=$('#navigation');
 function closeMenu(){navigation.classList.remove('open');menu.setAttribute('aria-expanded','false');}
@@ -110,7 +100,7 @@ $$('dialog').forEach(dialog=>{
 $$('[data-open-summary]').forEach(button=>button.addEventListener('click',()=>openDialog($('#summary-dialog'))));
 document.addEventListener('click',event=>{
   if(event.target.closest('[data-social-info]'))openDialog($('#social-dialog'));
-  if(event.target.closest('[data-send]')){$('[data-demo-message]').textContent=buildMessage(store.get());openDialog($('#message-dialog'));}
+  if(event.target.closest('[data-send]')&&outputIsReady()){$('[data-demo-message]').textContent=buildMessage(store.get());openDialog($('#message-dialog'));}
 });
 const stories={eventos:{image:'mesa',title:'Eventos, de perto.',text:'Aqui entram registros reais dos eventos, selecionados com a cliente. Esta fotografia é apenas uma referência de montagem.'},cardapios:{image:'massas',title:'O que pode ir à mesa.',text:'Um espaço para apresentar cardápios e novidades aprovados pela cliente. Os serviços e imagens deste modelo são ilustrativos.'},bastidores:{image:'servico',title:'O cuidado antes do encontro.',text:'Montagem, preparo e atendimento podem ganhar espaço nos destaques. Este exemplo ainda não mostra a equipe real.'},relatos:{image:'aperitivos',title:'Quem já celebrou.',text:'Aqui poderão aparecer relatos de clientes, com autorização. Não há depoimentos fictícios ou avaliações inventadas neste modelo.'}};
 $$('[data-story]').forEach(button=>button.addEventListener('click',()=>{const story=stories[button.dataset.story];$('[data-story-image]').src='assets/'+story.image+'-960.webp';$('#story-title').textContent=story.title;$('[data-story-text]').textContent=story.text;openDialog($('#story-dialog'));}));
@@ -134,15 +124,17 @@ if(gallery){
   let startX;$('[data-large-photo]').addEventListener('pointerdown',event=>startX=event.clientX);$('[data-large-photo]').addEventListener('pointerup',event=>{if(startX!==undefined&&Math.abs(event.clientX-startX)>55)showPhoto(galleryIndex+(event.clientX<startX?1:-1));startX=undefined;});
 }
 async function copyMessage(){
+  if(!outputIsReady())return;
   const message=buildMessage(store.get());
   try{await navigator.clipboard.writeText(message);feedback('Mensagem copiada.');}
   catch{const field=$('#message-preview');if(field){conversation?.showReview();field.closest('details').open=true;field.focus();field.select();}feedback('Selecione a mensagem e copie pelo menu do seu dispositivo.');}
 }
 $$('[data-copy]').forEach(button=>button.addEventListener('click',copyMessage));
 $$('[data-download]').forEach(button=>button.addEventListener('click',()=>{
+  if(!outputIsReady())return;
   const url=URL.createObjectURL(new Blob([buildMessage(store.get())],{type:'text/plain;charset=utf-8'}));const link=element('a');link.href=url;link.download='meu-evento-mesa-viva.txt';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);feedback('Seu pedido foi preparado para baixar.');
 }));
-window.addEventListener('pageshow',event=>{if(event.persisted){store.refresh();conversation?.restoreProgress();}});
+window.addEventListener('pageshow',event=>{if(event.persisted){conversation?.restoreProgress(false);store.refresh();}});
 
 // Open the requested menu when arriving from a modality shortcut.
 function revealLinkedMenu(){const id=location.hash.slice(1);if(!id.startsWith('servico-'))return;const card=document.getElementById(id),details=card?.querySelector('details');if(details)details.open=true;}

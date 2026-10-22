@@ -1,33 +1,46 @@
-# Mesa Viva — cardápios e pedido guiado
+# Mesa Viva — versão revisada
 
-Modelo fictício de buffet. Revisão iniciada em 20/10 e concluída em 21/10/2026.
+Modelo fictício de buffet. Revisão técnica e de experiência de 21/10/2026.
 
 ## Experiência
 
-- Abertura fotográfica preservada: três fotos de fundo, texto estável, seleção direta, pausa, teclado e gesto. Movimento reduzido inicia sem troca automática.
-- Inicial curta: visão das sete modalidades, acesso aos cardápios e pedido. Cardápios completos em cardapios.html; galeria em galeria.html. Ambas ligadas no cabeçalho.
-- Sete cardápios em linhas compactas, expansíveis: crepe francês, ilha gastronômica, churrasco, massas, salgados, feijoada e fondue. Mais de uma modalidade pode integrar o mesmo evento.
-- Uma notinha acompanha o mesmo rascunho entre as páginas. Meu evento abre/fecha com transição; começa recolhida salvo preferência da aba. Conteúdo fechado fica fora do teclado e da leitura assistiva; Escape recolhe.
-- Pedido em conversa guiada, uma pergunta por vez. Voltar preserva respostas; perguntas opcionais podem ficar em aberto. Histórico recolhível e revisão permitem editar qualquer resposta. Quem já escolheu cardápios pode usar essas escolhas e seguir.
-- A posição da conversa também é retomada. Recomeçar limpa pedido e progresso, inclusive ao retornar pelo histórico do navegador. Buffet completo indica intenção e não inclui automaticamente todos os serviços.
-- Introdução do pedido e título das dúvidas ficam acima dos respectivos conteúdos, sem colunas concorrentes. Cópia, download e simulação da mensagem continuam disponíveis na revisão.
+- Abertura fotográfica com texto estável, pausa, seleção direta e movimento reduzido. Marca Mesa Viva e fotografias ilustrativas preservadas.
+- Inicial breve; cardápios e galeria em páginas próprias. Sete modalidades combináveis no mesmo pedido.
+- Cardápios em lista de largura total, sem vazios entre colunas ao expandir. Chevron abre as opções; Selecionar/Remover controla a inclusão no evento.
+- A mesma notinha acompanha o pedido entre páginas. Começa recolhida, salvo preferência explícita da aba. Seu conteúdo fechado fica fora do teclado e da leitura assistiva.
+- Conversa com voltar, perguntas opcionais e atalho “Revisar com o que já sei”. O atalho preserva respostas confirmadas.
+- Edição temporária: a notinha mantém o pedido confirmado enquanto a resposta é alterada. Salvar confirma uma resposta válida; Cancelar mantém a anterior. Alteração de tipo de pedido que exige cardápios só é confirmada com as escolhas necessárias.
+- Edição em andamento e progresso podem ser retomados na mesma aba. Recomeçar limpa pedido, progresso e edição temporária. Desfazer recupera o pedido anteriormente confirmado.
+- Simular, copiar e baixar usam a mesma regra de validação. Não há envio real.
+
+## Organização
+
+- data.js: conteúdo e modalidades.
+- order-rules.js: regras comuns e normalização de respostas.
+- draft.js: único pedido confirmado, sanitização, armazenamento e mensagem.
+- order-flow.js: percurso das perguntas e buffer de edição por campos.
+- conversation.js: campos, foco, navegação e confirmação/cancelamento da edição.
+- app.js: integração das páginas, resumos e saídas; companion.js: apresentação da notinha.
+- hero.js e motion.js: apresentação e movimento, independentes das escolhas.
+
+Uma edição salva apenas os campos que possui, preservando alterações realizadas em outras partes do pedido. Valores inválidos digitados não apagam respostas confirmadas. Armazenamento bloqueado ou corrompido é tratado sem impedir o funcionamento em memória.
+
+## Desenvolvimento
+
+Sem dependências de produção ou etapa de build. Sirva os arquivos por HTTP: `python -m http.server 8765` na pasta do projeto; abra `/final/` no checkout ou `/` se estiver servindo apenas a pasta final. Módulos não devem ser abertos pelo explorador com file://.
+
+No checkout do GitHub, com Node.js instalado: `npm test` ou `node checks/run.mjs`. As quatro suítes executam 33 verificações comportamentais. Não é necessário instalar pacotes. O ZIP local contém o site pronto para servir; os testes estão no repositório.
 
 ## Conteúdo e limites
 
-Mesa Viva, cidade, descrições e sabores são exemplos. Não há preços de buffet, depoimentos inventados, disponibilidade confirmada ou contato real. Não foram buscadas novas fotos. As existentes são ilustrativas e mantêm os créditos; salgados, feijoada e fondue têm espaços editoriais para fotografias futuras.
+Nome, cidade, sabores e composições são exemplos. Não há avaliações inventadas, preços ou disponibilidade confirmada. Salgados, feijoada e fondue têm espaços editoriais para fotos futuras. Créditos das fotografias e licenças das fontes locais foram preservados.
 
-Lora e Source Sans 3 são fontes locais com licenças em assets/. WhatsApp é simulação local; nenhum pedido é transmitido. Não há painel administrativo, banco de dados, agenda ou pagamentos. Rascunho e progresso ficam no sessionStorage da mesma aba. A chave do rascunho foi preservada; coquetel permanece compatível com pedidos antigos sem ser oferecido como oitava modalidade.
-
-## Arquivos e prévia
-
-Sirva a pasta por HTTP, por exemplo `python -m http.server 8765`. Abrir index.html pelo explorador não executa corretamente os módulos.
-
-data.js contém os serviços; draft.js mantém o estado único; conversation.js controla as perguntas e o progresso; companion.js apresenta a notinha; app.js integra os fluxos; hero.js controla as fotos. Os testes ficam em checks/ no repositório.
+WhatsApp é simulação local. Não há painel administrativo, agenda, reservas, pagamentos ou persistência em servidor. Rascunho, percurso e edição ficam em sessionStorage na mesma aba. A chave do pedido foi preservada; coquetel continua compatível com rascunhos anteriores sem ser oferecido como oitava modalidade. Noindex é intencional para esta demonstração.
 
 ## Verificação
 
-22 verificações programáticas: sete do rascunho, dez de apresentação e cinco da navegação da conversa. Doze páginas auditadas para links, âncoras, imagens e bloqueio de indexação; JavaScript conferido na sintaxe.
+33 verificações programáticas: sete do pedido, dez de apresentação, cinco de percurso e onze de edição/validação. Auditoria dos 12 HTMLs, módulos e sintaxe JavaScript. Limpeza de 51 ramos de seletores obsoletos, conferidos contra HTML e scripts.
 
-No navegador: seleção de modalidades, continuidade entre cardápios, galeria e pedido, voltar, pular, validação de convidados, edição na revisão e no histórico, perguntas deixadas em aberto, mensagem simulada e recomeço do pedido entre páginas. Sem rolagem lateral nas larguras solicitadas de 320, 390, 768, 1280 e 1676 pixels. Aparelhos físicos e métricas de campo não foram medidos.
+Percursos de navegador: resposta inválida sem perda da anterior; salvar/cancelar; tipo de pedido e cardápios confirmados juntos; retomada da edição; seleção e remoção externas preservadas; validação ao simular/copiar/baixar; cuidados cancelados; mensagem atual; cardápios por teclado. Conferência de largura em 320, 390, 768, 1280 e 1676 pixels para pedido e cardápios, sem rolagem lateral observada. Aparelhos físicos e métricas de campo permanecem pendentes.
 
-Endereço do modelo: https://ramon-bg.github.io/buffet-modelos-demo/final/. A confirmação da publicação e os registros detalhados ficam nos relatórios locais outputs/site-final-publicacao.json e outputs/site-final-ui-ux-verificacao.json.
+Publicação: https://ramon-bg.github.io/buffet-modelos-demo/final/. Os relatórios completos e o pacote da revisão ficam nos outputs locais do projeto de trabalho.
