@@ -381,7 +381,6 @@ input,select,textarea {
 }
 #servicos {
   border-top:1px solid var(--line);
-  padding-top:88px;
 }
 .carousel-toolbar {
   display:flex;
@@ -1942,9 +1941,6 @@ dialog::backdrop {
   .eyebrow {
     font-size:.7rem;
     margin-bottom:17px;
-  }
-  #servicos {
-    padding-top:60px;
   }
   .carousel-toolbar {
     gap:10px;
