@@ -1,7 +1,7 @@
-import { SERVICES } from './data.js?v=11';
-import { validateQuestion, validateOrder, normalizeAnswers } from './order-rules.js?v=11';
-import { createJourney, createEditSession, questionPath, answerLabel, QUESTION_FIELDS, QUESTION_LABELS, JOURNEY_KEY } from './order-flow.js?v=11';
-export { JOURNEY_KEY, EDIT_KEY, createJourney, createEditSession, questionPath, answerLabel } from './order-flow.js?v=11';
+import { SERVICES } from './data.js?v=12';
+import { validateQuestion, validateOrder, normalizeAnswers } from './order-rules.js?v=12';
+import { createJourney, createEditSession, questionPath, answerLabel, QUESTION_FIELDS, QUESTION_LABELS, JOURNEY_KEY } from './order-flow.js?v=12';
+export { JOURNEY_KEY, EDIT_KEY, createJourney, createEditSession, questionPath, answerLabel } from './order-flow.js?v=12';
 
 export function setupConversation(form, { store, motion, storage }) {
   if (!form) return null;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SERVICES} from '../final/data.js?v=11';
-import {createStore,sanitize} from '../final/draft.js?v=11';
+import {SERVICES} from '../final/data.js?v=12';
+import {createStore,sanitize} from '../final/draft.js?v=12';
 import {setupHero} from '../final/hero.js';
 import {setupCompanion} from '../final/companion.js';
 
@@ -77,8 +77,11 @@ test('Escape closes the summary without discarding the event',()=>{
 });
 
 const html=readFileSync(new URL('../final/index.html',import.meta.url),'utf8');
-test('Home exposes seven compact menu shortcuts and separate hero controls',()=>{
- assert.equal((html.match(/href="cardapios.html#servico-/g)||[]).length,7);
+test('Home food previews retain direct catalogue fallbacks and independent hero controls',()=>{
+ assert.equal((html.match(/href="cardapios.html#servico-/g)||[]).length,3);
+ assert.equal((html.match(/data-menu-preview=/g)||[]).length,3);
+ assert.ok(html.includes('Explorar os 7 cardápios'));
+ assert.ok(html.includes('menu-panel.css?v=12'));
  assert.equal((html.match(/class="catalog-card"/g)||[]).length,0);
  assert.equal((html.match(/data-hero-select=/g)||[]).length,3);
  assert.equal((html.match(/data-order-companion/g)||[]).length,1);

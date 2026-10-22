@@ -2649,14 +2649,6 @@ em { color:#7a5b20; }
 @media(prefers-reduced-motion:reduce) {
 .hero-slide,.catalog-photo img { transition:none; } .catalog-card:hover .catalog-photo img { transform:none; } }
 /* Compact discovery and a single-column, question-by-question event brief. */
-.menu-intro { padding-block:50px; }
-.menu-intro h2 { font-size:clamp(2rem,3vw,2.8rem); }
-.menu-intro .eyebrow { margin-bottom:12px; }
-.menu-intro>div>p:not(.eyebrow) { margin-top:17px; color:var(--muted); }
-.menu-shortcuts { display:flex; flex-wrap:wrap; gap:10px; margin:25px 0 15px; }
-.menu-shortcuts a { display:inline-flex; gap:16px; justify-content:space-between; align-items:center; min-height:46px; padding:10px 16px; text-decoration:none; background:var(--white); border:1px solid var(--line); border-radius:4px; font-size:.97rem; }
-.menu-shortcuts a:hover { border-color:#ab8947; background:#f2ecde; }
-.menu-shortcuts a>span { font-size:.8rem; color:var(--muted); }
 /* One row per modality: expansion never leaves an empty neighbouring column. */
 .menus-page { padding-block:54px 70px; }
 .menus-page .section-head { display:block; margin-bottom:28px; }
@@ -2747,9 +2739,6 @@ em { color:#7a5b20; }
  .order-experience { grid-template-columns:none; }
 }
 @media(max-width:760px) {
- .menu-intro { padding-block:35px; }
- .menu-shortcuts { gap:8px; margin-top:20px; }
- .menu-shortcuts a { font-size:.85rem; min-height:44px; padding:9px 12px; gap:10px; }
  .menus-page { padding-block:36px 48px; }
  .menus-page h1 { font-size:clamp(2rem,7vw,2.8rem); }
  .menus-page .section-head>p { margin-top:17px; font-size:.96rem; }

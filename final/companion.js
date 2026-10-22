@@ -1,4 +1,4 @@
-import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=11';
+import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=12';
 
 const hasDraft=state=>state.services.length||state.request!=='orientacao'||state.occasion||state.format||state.date||state.guests||state.place.trim()||state.note.trim()||state.interests.length;
 export function describeChange(previous,next,source){

@@ -1,4 +1,4 @@
-import { REQUESTS, SERVICES } from './data.js?v=11';
+import { REQUESTS, SERVICES } from './data.js?v=12';
 
 const MAX_GUESTS = 100000;
 

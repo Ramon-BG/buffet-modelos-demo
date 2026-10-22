@@ -1,10 +1,11 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS} from './data.js?v=11';
-import {createStore,buildMessage,dateLabel} from './draft.js?v=11';
-import {setupCompanion} from './companion.js?v=11';
-import {setupMotion} from './motion.js?v=11';
-import {setupHero} from './hero.js?v=11';
-import {setupConversation,JOURNEY_KEY,EDIT_KEY} from './conversation.js?v=11';
-import {validateOrder} from './order-rules.js?v=11';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS} from './data.js?v=12';
+import {createStore,buildMessage,dateLabel} from './draft.js?v=12';
+import {setupCompanion} from './companion.js?v=12';
+import {setupMotion} from './motion.js?v=12';
+import {setupHero} from './hero.js?v=12';
+import {setupConversation,JOURNEY_KEY,EDIT_KEY} from './conversation.js?v=12';
+import {validateOrder} from './order-rules.js?v=12';
+import {setupMenuPanel} from './menu-panel.js?v=12';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -139,3 +140,6 @@ window.addEventListener('pageshow',event=>{if(event.persisted){conversation?.res
 // Open the requested menu when arriving from a modality shortcut.
 function revealLinkedMenu(){const id=location.hash.slice(1);if(!id.startsWith('servico-'))return;const card=document.getElementById(id),details=card?.querySelector('details');if(details)details.open=true;}
 revealLinkedMenu();window.addEventListener('hashchange',revealLinkedMenu);
+
+// The home catalogue shares the same confirmed order as the receipt and chat.
+setupMenuPanel({store});

@@ -2,7 +2,7 @@
 
 [Versão final](https://ramon-bg.github.io/buffet-modelos-demo/final/) · [Comparar modelos anteriores](https://ramon-bg.github.io/buffet-modelos-demo/)
 
-Mesa Viva é uma marca fictícia. A versão final tem abertura fotográfica, cardápios e galeria em páginas próprias e um pedido guiado com a mesma notinha durante a navegação.
+Mesa Viva é uma marca fictícia. A versão final tem abertura fotográfica, prévias compactas de comida e cardápios em um painel na própria inicial. Sete modalidades podem ser combinadas na mesma notinha e levadas ao pedido guiado. O catálogo completo mantém um endereço próprio como alternativa; a galeria tem página separada.
 
 Edições são temporárias até salvar. Cancelar mantém a resposta anterior. A validação é comum à conversa, à revisão e às ações de simular/copiar/baixar. Rascunho, progresso e edição podem ser retomados na mesma aba.
 

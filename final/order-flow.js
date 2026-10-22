@@ -1,5 +1,5 @@
-import { SERVICES, OCCASIONS, FORMATS, REQUESTS, INTERESTS } from './data.js?v=11';
-import { dateLabel } from './draft.js?v=11';
+import { SERVICES, OCCASIONS, FORMATS, REQUESTS, INTERESTS } from './data.js?v=12';
+import { dateLabel } from './draft.js?v=12';
 
 export const JOURNEY_KEY = 'mesa-viva-question-progress-v1';
 export const EDIT_KEY = 'mesa-viva-pending-edit-v1';
