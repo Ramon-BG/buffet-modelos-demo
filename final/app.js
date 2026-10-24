@@ -1,11 +1,12 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS} from './data.js?v=12';
-import {createStore,buildMessage,dateLabel} from './draft.js?v=12';
-import {setupCompanion} from './companion.js?v=12';
-import {setupMotion} from './motion.js?v=12';
-import {setupHero} from './hero.js?v=12';
-import {setupConversation,JOURNEY_KEY,EDIT_KEY} from './conversation.js?v=12';
-import {validateOrder} from './order-rules.js?v=12';
-import {setupMenuPanel} from './menu-panel.js?v=12';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS} from './data.js?v=14';
+import {createStore,buildMessage,dateLabel} from './draft.js?v=14';
+import {setupCompanion} from './companion.js?v=14';
+import {setupMotion} from './motion.js?v=14';
+import {setupHero} from './hero.js?v=14';
+import {setupConversation,JOURNEY_KEY,EDIT_KEY} from './conversation.js?v=14';
+import {validateOrder} from './order-rules.js?v=14';
+import {setupMenuPanel} from './menu-panel.js?v=14';
+import {setupOrderContext} from './order-context.js?v=14';
 
 const $=(selector,root=document)=>root.querySelector(selector);
 const $$=(selector,root=document)=>[...root.querySelectorAll(selector)];
@@ -56,8 +57,16 @@ function renderSummaries(state){
   const serviceNames=state.services.map(key=>SERVICES[key].name).join(', ');
   const line=$('[data-inline-summary]');if(line)line.textContent=serviceNames?(state.request==='completo'?'Buffet completo · preferências: ':'Serviços de interesse: ')+serviceNames:REQUESTS[state.request]+'.';
   $('[data-mobile-summary]').textContent=serviceNames||REQUESTS[state.request];renderAddButtons(state);
+  $$('[data-inline-count]').forEach(node=>node.textContent=state.services.length+' serviço'+(state.services.length===1?'':'s'));
+  $$('[data-order-summary-values]').forEach(node=>node.textContent=serviceNames||REQUESTS[state.request]);
   const preview=$('#message-preview');if(preview)preview.value=buildMessage(state);
-  const review=$('#review-details');if(review){review.replaceChildren(row('Pedido',REQUESTS[state.request],'request'),row('Serviços',serviceNames||'A definir com a equipe','services'),...eventRows(state,true).map(([label,value])=>row(label,value,{'Ocasião':'occasion','Formato':'format','Data':'date','Convidados':'guests','Local':'place','A confirmar':'care','Observações':'care'}[label])));}
+  const review=$('#review-details');if(review){
+    const editKeys={'Ocasião':'occasion','Formato':'format','Data':'date','Convidados':'guests','Local':'place','A confirmar':'care','Observações':'care'};
+    const rows=eventRows(state,true),extras=$('#review-extra-details');
+    const isMain=([label,value])=>!extras||['Data','Convidados','Local'].includes(label)||!['A definir','Nada informado'].includes(value);
+    review.replaceChildren(row('Pedido',REQUESTS[state.request],'request'),row('Serviços',serviceNames||'A definir com a equipe','services'),...rows.filter(isMain).map(([label,value])=>row(label,value,editKeys[label])));
+    if(extras){const optional=rows.filter(item=>!isMain(item));extras.replaceChildren(...optional.map(([label,value])=>row(label,value,editKeys[label])));extras.closest('details').hidden=!optional.length;}
+  }
 }
 document.addEventListener('click',event=>{
   const add=event.target.closest('[data-add]');if(add){const key=add.dataset.add;if(store.get().services.includes(key)){store.remove(key);feedback(SERVICES[key].name+' removido.',()=>store.add([key]),true);}else store.add([key]);}
@@ -75,6 +84,7 @@ store.subscribe((state, source) => {
 });
 renderSummaries(store.get());
 companion?.update(store.get(), 'init');
+setupOrderContext({companion,store});
 
 function outputIsReady() {
   if (conversation) return conversation.ensureReady();
@@ -142,4 +152,4 @@ function revealLinkedMenu(){const id=location.hash.slice(1);if(!id.startsWith('s
 revealLinkedMenu();window.addEventListener('hashchange',revealLinkedMenu);
 
 // The home catalogue shares the same confirmed order as the receipt and chat.
-setupMenuPanel({store});
+setupMenuPanel({store,onReview:()=>{if(conversation?.ensureReady())conversation.showReview(true);}});

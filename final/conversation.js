@@ -1,7 +1,7 @@
-import { SERVICES } from './data.js?v=12';
-import { validateQuestion, validateOrder, normalizeAnswers } from './order-rules.js?v=12';
-import { createJourney, createEditSession, questionPath, answerLabel, QUESTION_FIELDS, QUESTION_LABELS, JOURNEY_KEY } from './order-flow.js?v=12';
-export { JOURNEY_KEY, EDIT_KEY, createJourney, createEditSession, questionPath, answerLabel } from './order-flow.js?v=12';
+import { SERVICES } from './data.js?v=14';
+import { validateQuestion, validateOrder, normalizeAnswers } from './order-rules.js?v=14';
+import { createJourney, createEditSession, questionPath, answerLabel, QUESTION_FIELDS, QUESTION_LABELS, JOURNEY_KEY } from './order-flow.js?v=14';
+export { JOURNEY_KEY, EDIT_KEY, createJourney, createEditSession, questionPath, answerLabel } from './order-flow.js?v=14';
 
 export function setupConversation(form, { store, motion, storage }) {
   if (!form) return null;
@@ -14,6 +14,7 @@ export function setupConversation(form, { store, motion, storage }) {
   };
   let journey;
   let editor;
+  let pickingPace = false;
 
   function restoreSession(preserveOnDenied = false) {
     if (preserveOnDenied) {
@@ -115,7 +116,7 @@ export function setupConversation(form, { store, motion, storage }) {
     find('[data-chat-history]').hidden = !journey.visited().length || editor.active();
     const lastKey = journey.visited().filter(key => key !== journey.current()).at(-1);
     const bubble = find('[data-chat-last]');
-    bubble.hidden = !lastKey || journey.current() === 'review' || editor.active();
+    bubble.hidden = !lastKey || journey.current() === 'review' || editor.active() || journey.pace() === 'quick';
     if (lastKey) {
       bubble.querySelector('small').textContent = QUESTION_LABELS[lastKey] + ' · sua resposta';
       find('[data-chat-last-value]').textContent = answerLabel(lastKey, state);
@@ -123,18 +124,36 @@ export function setupConversation(form, { store, motion, storage }) {
   }
 
   function render(focus = false, sync = true) {
+    if (focus) pickingPace = false;
     const state = viewState();
     journey.reconcile(state);
     const question = journey.current();
     const reviewing = question === 'review';
     const editing = editor.active();
-    const path = questionPath(state);
+    const path = questionPath(state, journey.pace());
     const position = path.indexOf(question);
     const total = path.length - 1;
     if (sync) syncFields(state);
     all('[data-question]').forEach(panel => panel.hidden = panel.dataset.question !== question);
+    const quickDetail = ['date', 'guests', 'place'].indexOf(question);
     find('[data-chat-progress]').textContent = reviewing ? 'Confira antes de continuar'
-      : editing ? 'Editar resposta' : 'Pergunta ' + (position + 1) + ' de ' + total;
+      : editing ? 'Editar resposta'
+      : journey.pace() === 'quick' && quickDetail >= 0 ? 'Detalhe ' + (quickDetail + 1) + ' de 3 · opcional'
+      : question === 'request' ? 'Comece por aqui'
+      : 'Pergunta ' + (position + 1) + ' de ' + total;
+    const routeLabel = find('[data-chat-route-label]');
+    if (routeLabel) routeLabel.textContent = journey.pace() === 'quick' ? 'Pedido rápido' : 'Planejamento guiado';
+    const routeChoice = find('[data-chat-route-choice]');
+    if (routeChoice) routeChoice.hidden = editing || reviewing || question !== 'request' && !pickingPace;
+    const changeRoute = find('[data-chat-change-route]');
+    if (changeRoute) {
+      changeRoute.hidden = editing || reviewing || question === 'request';
+      changeRoute.setAttribute('aria-expanded', String(pickingPace));
+    }
+    all('[data-chat-pace]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.chatPace === journey.pace()));
+      button.disabled = editing;
+    });
     const progress = find('[data-chat-progress-bar]');
     progress.max = total;
     progress.value = reviewing ? total : Math.max(0, position);
@@ -150,7 +169,13 @@ export function setupConversation(form, { store, motion, storage }) {
       : question === 'care' ? 'Revisar meu pedido →' : 'Continuar →';
     controls.useChoices.hidden = editing || question !== 'request' || !state.services.length || state.request !== 'servicos';
     controls.next.hidden = !controls.useChoices.hidden;
-    controls.fast.hidden = editing || !['occasion', 'format', 'date', 'guests', 'place', 'care'].includes(question);
+    controls.fast.hidden = editing || reviewing || Boolean(validateOrder(store.get()));
+    controls.fast.textContent = state.request === 'orientacao' && !state.services.length ? 'Pedir orientação agora →' : 'Revisar meu pedido agora →';
+    const fastEntry = find('[data-chat-fast-entry]');
+    if (fastEntry) {
+      fastEntry.hidden = controls.fast.hidden;
+      fastEntry.classList.toggle('is-compact', !['request', 'services'].includes(question));
+    }
     find('[data-chat-existing]').hidden = editing || !state.services.length;
     find('[data-chat-existing-value]').textContent = state.services.map(id => SERVICES[id].name).join(', ');
     clearError();
@@ -233,6 +258,19 @@ export function setupConversation(form, { store, motion, storage }) {
   form.addEventListener('click', event => {
     const edit = event.target.closest('[data-chat-edit]');
     if (edit) beginEdit(edit.dataset.chatEdit);
+    const pace = event.target.closest('[data-chat-pace]');
+    if (pace && !editor.active()) {
+      const issue = ['date', 'guests', 'place'].includes(journey.current()) ? questionIssue({ ...viewState(), ...readQuestion() }) : null;
+      if (issue) { showError(issue); return; }
+      journey.setPace(pace.dataset.chatPace, store.get());
+      pickingPace = false;
+      render(true);
+    }
+    if (event.target.closest('[data-chat-change-route]')) {
+      pickingPace = !pickingPace;
+      render(false, false);
+      if (pickingPace) find('[data-chat-pace="' + journey.pace() + '"]')?.focus({preventScroll:true});
+    }
   });
   controls.back.addEventListener('click', () => {
     if (editor.active()) { editor.clear(); journey.review(); }
@@ -241,6 +279,8 @@ export function setupConversation(form, { store, motion, storage }) {
   });
   controls.skip.addEventListener('click', () => { journey.next(store.get()); render(true); });
   controls.fast.addEventListener('click', () => {
+    const issue = questionIssue({ ...viewState(), ...readQuestion() });
+    if (issue) { showError(issue); return; }
     if (requireValidOrder()) { journey.skipDetails(); render(true); }
   });
   controls.useChoices.addEventListener('click', () => { journey.useChoices(); render(true); });

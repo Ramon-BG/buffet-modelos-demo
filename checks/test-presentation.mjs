@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {SERVICES} from '../final/data.js?v=12';
-import {createStore,sanitize} from '../final/draft.js?v=12';
+import {SERVICES} from '../final/data.js?v=14';
+import {createStore,sanitize} from '../final/draft.js?v=14';
 import {setupHero} from '../final/hero.js';
 import {setupCompanion} from '../final/companion.js';
 
@@ -59,7 +59,7 @@ function receipt(saved){
  const selectors=['[data-companion-status]','[data-companion-undo]','[data-companion-count]','[data-compact-count]','.receipt-continue','[data-receipt-empty]','[data-receipt-details]'];
  root.nodes=Object.fromEntries(selectors.map(k=>[k,new Node()]));root.nodes['[data-receipt-body]']=body;root.nodes['[data-receipt-reveal]']=reveal;root.lists={'[data-receipt-fold]':[fold]};
  document.querySelector=k=>k==='[data-order-companion]'?root:null;
- const api=setupCompanion();api.update(store.get(),'init');return {root,fold,body,reveal,label,memory};
+ const api=setupCompanion();api.update(store.get(),'init');return {root,fold,body,reveal,label,memory,api};
 }
 const mobile=receipt();
 test('Summary animation keeps closed content inaccessible and the event intact',()=>{
@@ -69,6 +69,14 @@ test('Summary animation keeps closed content inaccessible and the event intact',
 });
 const restored=receipt('false');
 test('An explicit expanded preference survives navigation on mobile',()=>assert.equal(restored.reveal.inert,false));
+test('Contextual receipt leaves the form clear without losing the expanded preference',()=>{
+ const context=receipt('false');context.api.setContext(true);
+ assert.equal(context.root.inert,true);assert.equal(context.reveal.inert,true);
+ assert.equal(context.fold.attrs['aria-expanded'],'false');
+ assert.equal(context.memory.get('mesa-viva-receipt-collapsed'),'false');
+ context.api.setContext(false);assert.equal(context.root.inert,false);assert.equal(context.reveal.inert,false);
+ assert.equal(JSON.stringify(store.get()),before);
+});
 width=1440;const desktop=receipt();
 test('Desktop also starts compact to keep the photographic opening clear',()=>assert.equal(desktop.reveal.inert,true));
 test('Escape closes the summary without discarding the event',()=>{
@@ -81,7 +89,7 @@ test('Home food previews retain direct catalogue fallbacks and independent hero 
  assert.equal((html.match(/href="cardapios.html#servico-/g)||[]).length,3);
  assert.equal((html.match(/data-menu-preview=/g)||[]).length,3);
  assert.ok(html.includes('Explorar os 7 cardápios'));
- assert.ok(html.includes('menu-panel.css?v=12'));
+ assert.ok(html.includes('menu-panel.css?v=14'));
  assert.equal((html.match(/class="catalog-card"/g)||[]).length,0);
  assert.equal((html.match(/data-hero-select=/g)||[]).length,3);
  assert.equal((html.match(/data-order-companion/g)||[]).length,1);

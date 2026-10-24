@@ -1,7 +1,7 @@
-import {SERVICES} from './data.js?v=12';
+import {SERVICES} from './data.js?v=14';
 
 // Progressive enhancement: regular catalogue links remain usable without this panel.
-export function setupMenuPanel({store, root = document}) {
+export function setupMenuPanel({store, onReview, root = document}) {
   if (root.body.dataset.page !== 'home') return null;
   const keys = Object.keys(SERVICES);
   const dialog = root.createElement('dialog');
@@ -28,7 +28,7 @@ export function setupMenuPanel({store, root = document}) {
     <footer class="menu-panel-footer">
       <div class="menu-panel-order"><span data-menu-count></span><p role="status" aria-live="polite" aria-atomic="true" data-menu-status>Pode combinar mais de uma modalidade.</p></div>
       <button class="button" type="button" data-menu-add></button>
-      <button class="text-button menu-panel-done" type="button" data-menu-close>Concluir escolhas</button>
+      <button class="text-button menu-panel-done" type="button" data-menu-continue>Continuar explorando</button>
     </footer>`;
   root.body.append(dialog);
   const find = selector => dialog.querySelector(selector);
@@ -38,6 +38,7 @@ export function setupMenuPanel({store, root = document}) {
   const title = find('#menu-panel-title');
   const add = find('[data-menu-add]');
   const status = find('[data-menu-status]');
+  const continueButton = find('[data-menu-continue]');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const mobile = matchMedia('(max-width:760px)');
   let current = keys[0];
@@ -45,6 +46,7 @@ export function setupMenuPanel({store, root = document}) {
   let scrollPosition;
   let closing = false;
   let animation;
+  let imageRevision = 0;
 
   function node(tag, text, className) {
     const item = root.createElement(tag);
@@ -73,6 +75,7 @@ export function setupMenuPanel({store, root = document}) {
     find('[data-menu-count]').textContent = state.services.length
       ? state.services.length + (state.services.length === 1 ? ' serviço na sua notinha' : ' serviços na sua notinha')
       : 'Seu evento, do seu jeito';
+    continueButton.textContent = state.services.length && onReview ? 'Revisar meu pedido →' : 'Continuar explorando';
     for (const button of nav.children) {
       const key = button.dataset.menuChoice;
       button.setAttribute('aria-pressed', String(key === current));
@@ -104,10 +107,20 @@ export function setupMenuPanel({store, root = document}) {
     find('[data-menu-groups]').replaceChildren(...groups);
     const photo = find('.menu-panel-photo');
     const image = photo.querySelector('img');
+    const photoRevision = ++imageRevision;
     photo.hidden = !service.image;
     content.classList.toggle('has-photo', Boolean(service.image));
-    if (service.image) image.src = 'assets/' + service.image + '-960.webp';
-    else image.removeAttribute('src');
+    if (service.image) {
+      photo.classList.add('is-loading');
+      image.src = 'assets/' + service.image + '-960.webp';
+      image.decode().then(() => {
+        if (photoRevision === imageRevision) photo.classList.remove('is-loading');
+      }).catch(() => {
+        if (photoRevision !== imageRevision) return;
+        photo.hidden = true;
+        content.classList.remove('has-photo');
+      });
+    } else image.removeAttribute('src');
     select.value = key;
     status.textContent = store.get().services.includes(key)
       ? service.name + ' já está no seu evento.'
@@ -140,10 +153,18 @@ export function setupMenuPanel({store, root = document}) {
     closing = true;
     const exit = play([{opacity: 1, transform: 'none'}, {opacity: 0, transform: mobile.matches ? 'translateY(48px)' : 'translateY(12px) scale(.99)'}], 170);
     if (exit) await exit.finished.catch(() => {});
+    const finished = new Promise(resolve => dialog.addEventListener('close', resolve, {once: true}));
     dialog.close();
+    await finished;
   }
 
   dialog.querySelectorAll('[data-menu-close]').forEach(button => button.addEventListener('click', close));
+  continueButton.addEventListener('click', async () => {
+    if (closing) return;
+    const review = Boolean(store.get().services.length && onReview);
+    await close();
+    if (review) onReview();
+  });
   dialog.addEventListener('keydown', event => {
     if (event.key !== 'Tab') return;
     const controls = [...dialog.querySelectorAll('button, select, a[href], input, textarea, [tabindex="0"]')]

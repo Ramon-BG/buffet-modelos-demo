@@ -1,57 +1,47 @@
-# Mesa Viva — versão revisada
+# Mesa Viva — apresentação e pedido
 
-Modelo fictício de buffet. Revisão técnica e de experiência de 21/10/2026.
+Modelo fictício de buffet. Revisão de experiência e desenvolvimento de 23/10/2026.
 
 ## Experiência
 
-- Abertura fotográfica com texto estável, pausa, seleção direta e movimento reduzido. Marca Mesa Viva e fotografias ilustrativas preservadas.
-- Inicial breve com três prévias de comida. Cardápios abrem em um painel na própria página, com sete modalidades combináveis e a mesma notinha. A página completa continua disponível por link direto e sem JavaScript; a galeria permanece separada.
-- Cardápios em lista de largura total, sem vazios entre colunas ao expandir. Chevron abre as opções; Selecionar/Remover controla a inclusão no evento.
-- A mesma notinha acompanha o pedido entre páginas. Começa recolhida, salvo preferência explícita da aba. Seu conteúdo fechado fica fora do teclado e da leitura assistiva.
-- Conversa com voltar, perguntas opcionais e atalho “Revisar com o que já sei”. O atalho preserva respostas confirmadas.
-- Edição temporária: a notinha mantém o pedido confirmado enquanto a resposta é alterada. Salvar confirma uma resposta válida; Cancelar mantém a anterior. Alteração de tipo de pedido que exige cardápios só é confirmada com as escolhas necessárias.
-- Edição em andamento e progresso podem ser retomados na mesma aba. Recomeçar limpa pedido, progresso e edição temporária. Desfazer recupera o pedido anteriormente confirmado.
-- Simular, copiar e baixar usam a mesma regra de validação. Não há envio real.
+- Abertura com mesas e pratos finalizados, seleção de fotografia, pausa e movimento reduzido. Marca Mesa Viva e fotografias ilustrativas preservadas.
+- Três prévias compactas abrem um painel com sete cardápios combináveis. Links diretos e o catálogo HTML continuam disponíveis sem JavaScript; a galeria permanece em página própria.
+- Após escolher cardápios, o painel oferece revisão direta do pedido. Fechar mantém o ponto e o foco de origem; revisar conduz explicitamente ao pedido.
+- Caminho rápido: três detalhes opcionais (data, convidados e local), depois de definir o tipo de pedido e as modalidades quando necessário. O visitante pode revisar antes de preencher esses detalhes.
+- Caminho guiado: mantém ocasião, formato e cuidados. O controle de troca de roteiro fica compacto durante as perguntas. Trocar o roteiro preserva respostas; jornadas anteriores continuam no percurso original.
+- Uma única notinha representa o pedido confirmado. Durante o formulário, o acesso ao resumo fica dentro da seção em todas as larguras; o papel flutuante fica inerte e oculto. O resumo abre em diálogo com conteúdo rolável e fechamento visível. Ao sair da seção, a preferência de abertura anterior é preservada.
+- A revisão destaca os detalhes essenciais e os valores preenchidos. Campos adicionais vazios ficam em “Adicionar outros detalhes”; respostas já preenchidas não são ocultadas.
+- Edição temporária com salvar/cancelar. Um dado inválido não apaga o anterior; alterar o tipo de pedido e seus serviços obrigatórios é confirmado em conjunto. Simular, copiar e baixar compartilham a validação.
+- Mudanças de fotografia no painel aguardam a imagem correta, evitando exibir uma foto de outra modalidade durante o carregamento.
 
 ## Organização
 
-- menu-panel.js e menu-panel.css: consulta dos cardápios na inicial, seleção compartilhada, foco e animação de abertura/fechamento.
 - data.js: conteúdo e modalidades.
-- order-rules.js: regras comuns e normalização de respostas.
-- draft.js: único pedido confirmado, sanitização, armazenamento e mensagem.
-- order-flow.js: percurso das perguntas e buffer de edição por campos.
-- conversation.js: campos, foco, navegação e confirmação/cancelamento da edição.
-- app.js: integração das páginas, resumos e saídas; companion.js: apresentação da notinha.
-- hero.js e motion.js: apresentação e movimento, independentes das escolhas.
+- order-rules.js: validação comum e normalização.
+- draft.js: pedido confirmado, sanitização, armazenamento e mensagem.
+- order-flow.js: percurso rápido/guiado, histórico e edição temporária por campos.
+- conversation.js: campos, foco, navegação e confirmação/cancelamento.
+- companion.js: apresentação da notinha; order-context.js: integração do resumo com o formulário.
+- menu-panel.js: consulta dos cardápios e seleção compartilhada; app.js: integração das páginas e saídas.
+- hero.js e motion.js: apresentação e movimento independentes das escolhas.
+- experience.css: refinamentos do percurso e resumo, sem novas dependências.
 
-Uma edição salva apenas os campos que possui, preservando alterações realizadas em outras partes do pedido. Valores inválidos digitados não apagam respostas confirmadas. Armazenamento bloqueado ou corrompido é tratado sem impedir o funcionamento em memória.
+Uma edição salva apenas os campos que possui. Mudanças feitas em outras partes do pedido são preservadas. Armazenamento bloqueado ou corrompido não impede o funcionamento em memória.
 
-## Desenvolvimento
+## Executar e verificar
 
-Sem dependências de produção ou etapa de build. Sirva os arquivos por HTTP: `python -m http.server 8765` na pasta do projeto; abra `/final/` no checkout ou `/` se estiver servindo apenas a pasta final. Módulos não devem ser abertos pelo explorador com file://.
+Sem dependências de produção ou build. Sirva por HTTP e abra /final/ no checkout, ou / se estiver servindo apenas esta pasta. Módulos não devem ser abertos com file://.
 
-No checkout do GitHub, com Node.js instalado: `npm test` ou `node checks/run.mjs`. As quatro suítes executam 33 verificações comportamentais. Não é necessário instalar pacotes. O ZIP local contém o site pronto para servir; os testes estão no repositório.
+No checkout, execute `npm test` ou `node checks/run.mjs` com Node.js instalado. São quatro suítes e 37 verificações: sete do pedido, onze de apresentação, oito de percurso e onze de edição/validação. Não é necessário instalar pacotes.
+
+Conferência de navegador: revisão direta com múltiplos cardápios; rápido e guiado; troca de roteiro; conservação de respostas; validação e cancelamento; detalhes adicionais; resumo com sete serviços; controles visíveis e ausência de rolagem horizontal em larguras solicitadas de 320, 390, 768, 1280 e 1676 pixels, incluindo altura de 568 pixels. Auditoria de 12 HTMLs e sintaxe dos módulos. Publicação registrada nos relatórios locais do projeto.
 
 ## Conteúdo e limites
 
-Nome, cidade, sabores e composições são exemplos. Não há avaliações inventadas, preços ou disponibilidade confirmada. Salgados, feijoada e fondue têm espaços editoriais para fotos futuras. Créditos das fotografias e licenças das fontes locais foram preservados.
+Nome, cidade, sabores e composições são exemplos. Não há avaliações inventadas, preços ou disponibilidade confirmada. Não foram adicionadas fotografias da cliente; créditos e licenças foram preservados. Salgados, feijoada e fondue continuam sem fotografias específicas.
 
-WhatsApp é simulação local. Não há painel administrativo, agenda, reservas, pagamentos ou persistência em servidor. Rascunho, percurso e edição ficam em sessionStorage na mesma aba. A chave do pedido foi preservada; coquetel continua compatível com rascunhos anteriores sem ser oferecido como oitava modalidade. Noindex é intencional para esta demonstração.
+WhatsApp é simulação local. Não há painel administrativo, agenda, reservas, pagamentos ou persistência em servidor. Rascunho, percurso e edição usam sessionStorage na mesma aba. As chaves existentes são preservadas; coquetel continua compatível com rascunhos antigos sem ser oferecido como oitava modalidade. Noindex é intencional para a demonstração.
 
-## Verificação
+Apresentação e fluxos foram verificados no navegador; aparelhos físicos, métricas de campo e testes com clientes reais permanecem pendentes. A revisão não atribui nota automática de qualidade ou de conversão.
 
-33 verificações programáticas: sete do pedido, dez de apresentação, cinco de percurso e onze de edição/validação. Auditoria dos 12 HTMLs, módulos e sintaxe JavaScript. Limpeza de 51 ramos de seletores obsoletos, conferidos contra HTML e scripts.
-
-Percursos de navegador: resposta inválida sem perda da anterior; salvar/cancelar; tipo de pedido e cardápios confirmados juntos; retomada da edição; seleção e remoção externas preservadas; validação ao simular/copiar/baixar; cuidados cancelados; mensagem atual; cardápios por teclado. Conferência de largura em 320, 390, 768, 1280 e 1676 pixels para pedido e cardápios, sem rolagem lateral observada. Aparelhos físicos e métricas de campo permanecem pendentes.
-
-Publicação: https://ramon-bg.github.io/buffet-modelos-demo/final/. Os relatórios completos e o pacote da revisão ficam nos outputs locais do projeto de trabalho.
-
-## Painel de cardápios — 21/10/2026
-
-A inicial apresenta três fotografias compactas. Os links de cardápios da inicial abrem o mesmo painel com sete modalidades, conteúdo derivado de data.js e seleção ligada ao único pedido confirmado. O total escolhido é visível no rodapé do painel; a notinha e a conversa são atualizadas pela mesma store.
-
-Desktop: janela ampla com navegação por modalidade e fotografia ao lado das opções. Celular: painel inferior com seletor nativo, conteúdo rolável e ações fixas. Em telas baixas, a fotografia fica menor para priorizar a leitura. Modalidades sem fotografia têm composição de texto, sem imagens comerciais inventadas.
-
-Abrir e fechar respeitam movimento reduzido. Fechar, Concluir escolhas e Escape preservam a posição da página e devolvem o foco ao item de origem. O teclado circula dentro do painel. Os links HTML continuam levando ao catálogo completo sem JavaScript ou quando abertos em outra aba; a galeria e os modelos anteriores permanecem disponíveis.
-
-Verificação desta alteração: 33 verificações programáticas, auditoria dos 12 HTMLs e sintaxe dos módulos; consulta das sete modalidades, combinações, remoção, fechamento, retomada, teclado e continuidade no questionário conferidos no navegador. Larguras de 320, 390, 768, 1280 e 1676 pixels, incluindo altura de 568 pixels. Aparelhos físicos não foram testados.
+Publicação: https://ramon-bg.github.io/buffet-modelos-demo/final/

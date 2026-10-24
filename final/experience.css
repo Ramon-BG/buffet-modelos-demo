@@ -1,0 +1,67 @@
+/* The order has a short path, an optional guided path and a compact review. */
+.hero-stage:after { background:linear-gradient(90deg,#112017ed 0%,#112017bc 43%,#11201733 100%); }
+.hero-slide[data-title="Mesas prontas"] img { object-position:center 48%; }
+.hero-slide[data-title="Para compartilhar"] img { object-position:center 52%; }
+.hero .lead { max-width:38ch; }
+.menu-tasting { border-radius:7px; }
+.menu-panel-photo img { transition:opacity .22s ease; }
+.menu-panel-photo.is-loading img { opacity:0; }
+.menu-panel-done { font-weight:600; color:var(--blue); }
+.chat-route-choice { display:grid; grid-template-columns:1fr 1fr; padding:4px; gap:5px; margin-bottom:24px; border:1px solid var(--line); border-radius:8px; background:#f5f3ec; }
+.chat-route-choice button { min-height:66px; padding:10px 14px; border:1px solid transparent; border-radius:5px; background:transparent; text-align:left; }
+.chat-route-choice button[aria-pressed="true"] { border-color:#9b7b3e; background:var(--white); box-shadow:0 2px 6px #25282309; }
+.chat-route-choice button[aria-pressed="true"] strong:after { content:"✓"; margin-left:8px; color:#58421a; }
+.chat-route-choice strong { display:block; font-size:1rem; font-weight:600; }
+.chat-route-choice small { display:block; font-size:.8rem; line-height:1.4; color:var(--muted); margin-top:3px; }
+.chat-fast-entry { display:flex; justify-content:space-between; align-items:center; gap:20px; background:#f7f2e5; padding:14px 16px; border:1px solid #dfd2b2; border-radius:5px; margin-bottom:24px; }
+.chat-fast-entry p { font-size:.84rem; line-height:1.45; max-width:39ch; color:var(--muted); }
+.chat-fast-entry .chat-shortcut { min-height:44px; flex:none; margin:0; padding:8px 0; font-size:.9rem; font-weight:600; color:var(--blue); }
+.chat-route-choice[hidden],.chat-fast-entry[hidden] { display:none; }
+.chat-top { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:10px; }
+.chat-route-change { min-width:44px; min-height:44px; padding:5px; border:0; background:transparent; font-size:.75rem; color:var(--muted); text-decoration:underline; text-underline-offset:4px; }
+.chat-fast-entry.is-compact { border:0; padding:0; background:transparent; margin-bottom:15px; }
+.chat-fast-entry.is-compact>p { display:none; }
+.chat-fast-entry.is-compact .chat-shortcut { padding-block:8px; font-size:.84rem; }
+.chat-question h3:focus { outline:none; }
+.review-extras { margin:16px 0 24px; border:1px solid var(--line); border-radius:5px; padding:0 16px; }
+.review-extras>summary { cursor:pointer; min-height:52px; padding-block:14px; font-size:.93rem; font-weight:600; }
+.review-extras>summary small { display:block; color:var(--muted); font-size:.78rem; font-weight:400; margin-top:3px; }
+.review-extras .review-details { margin:0 0 12px; }
+.review-extras[hidden] { display:none; }
+.order-summary-access { display:block; margin-bottom:16px; }
+.order-summary-access button { display:flex; align-items:center; justify-content:space-between; width:100%; gap:16px; min-height:70px; padding:13px 16px; background:#fff7d9; border:1px solid #d2c397; border-radius:6px; text-align:left; }
+.order-summary-access svg { flex:none; width:23px; height:28px; fill:none; stroke:#79623b; stroke-width:1.5; }
+.order-summary-copy { flex:1; min-width:0; }
+.order-summary-copy strong { font-size:.94rem; font-weight:600; }
+.order-summary-copy small { display:block; color:var(--muted); font-size:.78rem; line-height:1.4; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.order-summary-count { display:block; font-size:.75rem; color:var(--muted); }
+.order-summary-action { flex:none; font-size:.8rem; text-align:right; text-decoration:underline; text-underline-offset:4px; }
+.order-feedback { margin-top:8px; font-size:.8rem; color:var(--muted); }
+.order-feedback:empty { display:none; }
+.receipt-rail { transition:width .38s cubic-bezier(.22,1,.36,1),opacity .2s,transform .25s,visibility .25s; }
+.receipt-in-order .receipt-rail { opacity:0; visibility:hidden; transform:translateY(14px); pointer-events:none; }
+dialog.sheet[open] { display:grid; grid-template-rows:auto minmax(0,1fr) auto; gap:16px; overflow:hidden; }
+.sheet::backdrop { background:#172019ad; }
+.sheet .dialog-head { margin:0; }
+.sheet .draft-paper { overflow:auto; max-height:calc(80dvh - 180px); overscroll-behavior:contain; }
+.sheet>.button { margin:0; }
+@media(max-width:760px) {
+ .hero-stage:after { background:linear-gradient(180deg,#112017b8 0%,#112017b8 65%,#112017ed 100%); }
+ .hero-slide[data-title="Mesas prontas"] img { object-position:58% center; }
+ .chat-route-choice { margin-bottom:20px; }
+ .chat-route-choice button { padding:10px; min-height:70px; }
+ .chat-route-choice strong { font-size:.94rem; }
+ .chat-route-choice small { font-size:.74rem; }
+ .chat-fast-entry { display:block; padding:12px 14px; margin-bottom:22px; }
+ .chat-fast-entry .chat-shortcut { width:100%; text-align:left; padding-top:10px; }
+ .order-summary-access button { padding:12px 14px; gap:12px; }
+ .order-summary-copy small { max-width:32ch; }
+ .order-summary-action { font-size:.76rem; }
+ dialog.sheet { position:fixed; inset:auto 0 0; margin:0; width:100%; max-height:94dvh; padding:20px 18px calc(18px + env(safe-area-inset-bottom)); border-radius:16px 16px 0 0; }
+ .sheet .dialog-head { align-items:center; }
+ .sheet .dialog-head h2 { font-size:1.5rem; }
+ .sheet .draft-paper { padding:14px; max-height:calc(82dvh - 150px); }
+}
+@media(prefers-reduced-motion:reduce) {
+ .receipt-rail,.menu-panel-photo img { transition:none; }
+}

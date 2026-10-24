@@ -1,5 +1,5 @@
-import { SERVICES, OCCASIONS, FORMATS, REQUESTS, INTERESTS } from './data.js?v=12';
-import { dateLabel } from './draft.js?v=12';
+import { SERVICES, OCCASIONS, FORMATS, REQUESTS, INTERESTS } from './data.js?v=14';
+import { dateLabel } from './draft.js?v=14';
 
 export const JOURNEY_KEY = 'mesa-viva-question-progress-v1';
 export const EDIT_KEY = 'mesa-viva-pending-edit-v1';
@@ -16,9 +16,10 @@ export const QUESTION_FIELDS = {
 const QUESTIONS = [...Object.keys(QUESTION_FIELDS), 'review'];
 const isQuestion = key => Object.hasOwn(QUESTION_FIELDS, key);
 
-export function questionPath(state) {
+export function questionPath(state, pace = 'guided') {
   const services = state.request !== 'orientacao' || state.services.length ? ['services'] : [];
-  return ['request', ...services, 'occasion', 'format', 'date', 'guests', 'place', 'care', 'review'];
+  const details = pace === 'quick' ? ['date', 'guests', 'place'] : ['occasion', 'format', 'date', 'guests', 'place', 'care'];
+  return ['request', ...services, ...details, 'review'];
 }
 
 export function answerLabel(key, state) {
@@ -51,21 +52,33 @@ export function createJourney(storage) {
   let current = QUESTIONS.includes(saved?.current) ? saved.current : 'request';
   let editing = Boolean(saved?.editing) && current !== 'review';
   let visited = Array.isArray(saved?.visited) ? [...new Set(saved.visited.filter(isQuestion))] : [];
-  const persist = () => writeJSON(storage, JOURNEY_KEY, { current, editing, visited });
+  // Existing journeys keep their original route; new visitors start with three optional details.
+  let pace = saved?.pace === 'guided' || saved?.pace === 'quick' ? saved.pace
+    : QUESTIONS.includes(saved?.current) ? 'guided' : 'quick';
+  const pathFor = state => questionPath(state, pace);
+  const firstDetail = () => pace === 'quick' ? 'date' : 'occasion';
+  const persist = () => writeJSON(storage, JOURNEY_KEY, { current, editing, visited, pace });
   const mark = key => { if (isQuestion(key) && !visited.includes(key)) visited.push(key); };
 
   return {
     current: () => current,
     editing: () => editing,
     visited: () => [...visited],
+    pace: () => pace,
+    setPace(value, state) {
+      if (editing || !['quick', 'guided'].includes(value)) return;
+      pace = value;
+      if (!pathFor(state).includes(current)) current = current === 'care' ? 'review' : firstDetail();
+      persist();
+    },
     reconcile(state) {
-      if (!editing && !questionPath(state).includes(current)) { current = 'occasion'; persist(); }
+      if (!editing && !pathFor(state).includes(current)) { current = firstDetail(); persist(); }
     },
     next(state) {
       mark(current);
       if (editing) { current = 'review'; editing = false; }
       else {
-        const path = questionPath(state);
+        const path = pathFor(state);
         current = path[Math.min(path.indexOf(current) + 1, path.length - 1)];
       }
       persist();
@@ -74,7 +87,7 @@ export function createJourney(storage) {
     back(state) {
       if (editing) { current = 'review'; editing = false; }
       else {
-        const path = questionPath(state);
+        const path = pathFor(state);
         current = path[Math.max(0, path.indexOf(current) - 1)];
       }
       persist();
@@ -87,10 +100,10 @@ export function createJourney(storage) {
     review() { current = 'review'; editing = false; persist(); },
     useChoices() {
       mark('request'); mark('services');
-      current = 'occasion'; editing = false; persist();
+      current = firstDetail(); editing = false; persist();
     },
     skipDetails() { mark(current); current = 'review'; editing = false; persist(); },
-    reset() { current = 'request'; editing = false; visited = []; remove(storage, JOURNEY_KEY); }
+    reset() { current = 'request'; editing = false; visited = []; pace = 'quick'; remove(storage, JOURNEY_KEY); }
   };
 }
 

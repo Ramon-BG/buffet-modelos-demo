@@ -1,5 +1,5 @@
-import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=12';
-import {normalizeGuestCount} from './order-rules.js?v=12';
+import {SERVICES,OCCASIONS,FORMATS,REQUESTS,INTERESTS} from './data.js?v=14';
+import {normalizeGuestCount} from './order-rules.js?v=14';
 export const STORAGE_KEY='mesa-viva-final-draft-v1';
 export const emptyDraft=()=>({request:'orientacao',services:[],occasion:'',format:'',date:'',guests:'',place:'',note:'',interests:[]});
 const pick=(value,source,fallback='')=>Object.hasOwn(source,value)?value:fallback;

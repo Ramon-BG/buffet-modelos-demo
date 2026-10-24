@@ -1,4 +1,4 @@
-import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=12';
+import {SERVICES,OCCASIONS,FORMATS} from './data.js?v=14';
 
 const hasDraft=state=>state.services.length||state.request!=='orientacao'||state.occasion||state.format||state.date||state.guests||state.place.trim()||state.note.trim()||state.interests.length;
 export function describeChange(previous,next,source){
@@ -27,18 +27,21 @@ export function setupCompanion(){
   const folds=[...root.querySelectorAll('[data-receipt-fold]')],count=root.querySelector('[data-companion-count]'),compactCount=root.querySelector('[data-compact-count]');
   const wide=matchMedia('(min-width:1360px)'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
   let preference=null;try{preference=sessionStorage.getItem('mesa-viva-receipt-collapsed');}catch{}
-  let collapsed=preference===null?true:preference==='true';
+  let collapsed=preference===null?true:preference==='true',contextual=false;
   let current,previous,noticeTimer,typingTimer,undoAction;
   function updateLayout(){
+    const closed=collapsed||contextual;
     root.dataset.layout=wide.matches?'paper':'compact';
-    root.classList.toggle('is-collapsed',collapsed);body.hidden=false;
+    root.classList.toggle('is-collapsed',closed);body.hidden=false;
     // Grid interpolation animates both directions, including a quick reversal.
     // Inert removes closing/closed content from keyboard and accessibility access.
-    reveal.inert=collapsed;reveal.setAttribute('aria-hidden',String(collapsed));
-    document.body.classList.toggle('receipt-collapsed',collapsed);
+    reveal.inert=closed;reveal.setAttribute('aria-hidden',String(closed));
+    root.inert=contextual;root.setAttribute('aria-hidden',String(contextual));
+    document.body.classList.toggle('receipt-collapsed',closed);
+    document.body.classList.toggle('receipt-in-order',contextual);
     root.classList.toggle('is-empty',!current||!hasDraft(current));
     document.body.classList.add('companion-visible');
-    folds.forEach(button=>{button.setAttribute('aria-expanded',String(!collapsed));button.setAttribute('aria-label','Meu evento · '+compactCount.textContent+' · '+(collapsed?'Ver resumo':'Fechar'));const label=button.querySelector('[data-fold-label]');if(label)label.textContent=collapsed?'Ver resumo':'Fechar';});
+    folds.forEach(button=>{button.setAttribute('aria-expanded',String(!closed));button.setAttribute('aria-label','Meu evento · '+compactCount.textContent+' · '+(closed?'Ver resumo':'Fechar'));const label=button.querySelector('[data-fold-label]');if(label)label.textContent=closed?'Ver resumo':'Fechar';});
   }
   function setCollapsed(value){collapsed=value;preference=String(collapsed);try{sessionStorage.setItem('mesa-viva-receipt-collapsed',preference);}catch{}updateLayout();}
   function notify(message,action){
@@ -55,6 +58,12 @@ export function setupCompanion(){
   wide.addEventListener('change',updateLayout);
   return {
     notify,
+    setContext(active){
+      if(contextual===Boolean(active))return;
+      contextual=Boolean(active);
+      if(contextual&&root.contains(document.activeElement))document.querySelector('[data-order-summary-access]')?.focus({preventScroll:true});
+      updateLayout();
+    },
     update(state,source='action'){
       const added=previous&&source!=='init'?state.services.filter(key=>!previous.services.includes(key)):[];
       const countChanged=previous&&previous.services.length!==state.services.length;
