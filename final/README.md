@@ -44,4 +44,4 @@ WhatsApp é simulação local. Não há painel administrativo, agenda, reservas,
 
 Apresentação e fluxos foram verificados no navegador; aparelhos físicos, métricas de campo e testes com clientes reais permanecem pendentes. A revisão não atribui nota automática de qualidade ou de conversão.
 
-Publicação: https://ramon-bg.github.io/buffet-modelos-demo/final/
+Execução: sirva o repositório por HTTP e abra /final/. GitHub Pages desativado; consulte o README da raiz.
